@@ -1,7 +1,7 @@
 package imgur.com.imgurclient;
 
 /**
- * Created by Emilija.Pereska on 6/16/2016.
+ * Created by Emilija.Pereska on six/16/2016.
  */
 public class ImgurModel {
 

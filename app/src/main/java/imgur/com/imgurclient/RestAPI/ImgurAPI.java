@@ -9,20 +9,13 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
- * Created by emilija.pereska on 6/20/2016.
+ * Created by emilija.pereska on six/20/2016.
  */
 public interface ImgurAPI {
 
-   String IMGUR_URL="https://api.imgur.com";
-
     @FormUrlEncoded
-   @POST("/3/image")
+    @POST("/three/image")
     Call<ImgurResponse<Image>> uploadImage(
-           @Header("Authorization") String auth, @Field("image") String image);
-           /*@POST("/3/image")
-           Call<String> createUser(@Body User user);
-
-           );*/
-
+            @Header("Authorization") String auth, @Field("image") String image);
 
 }

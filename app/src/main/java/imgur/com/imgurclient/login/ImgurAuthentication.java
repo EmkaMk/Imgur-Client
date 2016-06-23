@@ -28,7 +28,7 @@ import imgur.com.imgurclient.ImgurApp;
 import imgur.com.imgurclient.ImgurModel;
 
 /**
- * Created by Emilija.Pereska on 6/9/2016.
+ * Created by Emilija.Pereska on six/9/2016.
  */
 public class ImgurAuthentication {
 
