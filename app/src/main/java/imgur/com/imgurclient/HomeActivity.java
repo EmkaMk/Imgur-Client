@@ -33,6 +33,7 @@ public class HomeActivity extends AppCompatActivity {
             setContentView(R.layout.activity_home);
 
         } else {
+
             login = (Button) findViewById(R.id.login);
             login.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -45,7 +46,6 @@ public class HomeActivity extends AppCompatActivity {
         }
 
 
-
         if (getIntent().getAction().equals(Intent.ACTION_VIEW)) // uspesno logiranje
         {
 
@@ -56,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(HomeActivity.this, "Logged in!", Toast.LENGTH_LONG).show();
 
             } else {
-
+                Toast.makeText(HomeActivity.this, "Login is unsuccessful", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -72,13 +72,15 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         new RequestRefreshToken().execute();
         if (auth.isLoggedIn()) {
             setContentView(R.layout.activity_main);
             Intent i = new Intent(this, MainActivity.class);
             startActivity(i);
 
-        }/* else {
+        } else {
+
             login.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -87,7 +89,22 @@ public class HomeActivity extends AppCompatActivity {
                     startActivityForResult(browserIntent, 10);
                 }
             });
-        }*/
+        }
+
+
+        if (getIntent().getAction().equals(Intent.ACTION_VIEW)) // uspesno logiranje
+        {
+
+            Uri data = getIntent().getData();
+            if (data != null && data.toString().contains(Constants.REDIRECT_URL)) {
+                this.getURIValues(data, auth);
+                setContentView(R.layout.activity_home);
+                //Toast.makeText(HomeActivity.this, "Logged in!", Toast.LENGTH_LONG).show();
+
+            } else {
+
+            }
+        }
     }
 
 

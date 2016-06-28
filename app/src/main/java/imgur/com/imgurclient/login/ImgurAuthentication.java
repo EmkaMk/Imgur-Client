@@ -19,13 +19,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import imgur.com.imgurclient.Constants;
 import imgur.com.imgurclient.ImgurApp;
-import imgur.com.imgurclient.ImgurModel;
+import imgur.com.imgurclient.LoginModel;
 
 /**
  * Created by Emilija.Pereska on six/9/2016.
@@ -33,7 +32,7 @@ import imgur.com.imgurclient.ImgurModel;
 public class ImgurAuthentication {
 
     static final String SHARED_PREFERENCES = "shared_prefs";
-    ImgurModel model = new ImgurModel();
+    LoginModel model =new LoginModel();
 
 
     private SharedPreferences getPreferences() {
@@ -52,11 +51,11 @@ public class ImgurAuthentication {
 
     private void populatePreferences() {
         getPreferences().edit()
-                .putString("access_token", ImgurModel.access_token)
-                .putString("refresh_token", ImgurModel.refresh_token)
-                .putLong("expires_in", ImgurModel.expires_in)
-                .putString("token_type", ImgurModel.token_type)
-                .putString("account_username", ImgurModel.account_username)
+                .putString("access_token", LoginModel.access_token)
+                .putString("refresh_token", LoginModel.refresh_token)
+                .putLong("expires_in", LoginModel.expires_in)
+                .putString("token_type", LoginModel.token_type)
+                .putString("account_username", LoginModel.account_username)
                 .commit();
     }
 

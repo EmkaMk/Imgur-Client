@@ -44,7 +44,6 @@ public class UploadActivity extends AppCompatActivity {
         select = (Button) findViewById(R.id.select);
         chooseImage();
 
-
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,12 +72,11 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ImgurResponse<Image>> call, Response<ImgurResponse<Image>> response) {
                 if (response.isSuccessful()) {
+
                     Toast.makeText(UploadActivity.this, "Successful upload", Toast.LENGTH_LONG).show();
 
                 }
-
             }
-
             @Override
             public void onFailure(Call<ImgurResponse<Image>> call, Throwable t) {
 

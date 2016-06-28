@@ -3,7 +3,7 @@ package imgur.com.imgurclient;
 /**
  * Created by Emilija.Pereska on six/16/2016.
  */
-public class ImgurModel {
+public class LoginModel {
 
     public static String access_token;
     public static String refresh_token;

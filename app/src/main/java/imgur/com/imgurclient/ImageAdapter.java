@@ -1,15 +1,14 @@
 package imgur.com.imgurclient;
 
 import android.content.Context;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
-
-import java.util.List;
+import android.widget.Toast;
+import com.squareup.picasso.Picasso;
+import java.util.ArrayList;
 
 
 /**
@@ -17,35 +16,41 @@ import java.util.List;
  */
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHolder> {
 
-    List<Post> posts;
-    private Integer[] images = {R.mipmap.one, R.mipmap.two, R.mipmap.three, R.mipmap.four, R.mipmap.five, R.mipmap.six, R.mipmap.seven
-    };
-    Context context;
 
-    public ImageAdapter(Context c)
-    {
-        this.context=c;
+    MainActivity context;
+    ArrayList<String> imageLinks;
+
+
+    public ImageAdapter(MainActivity c) {
+        this.context = c;
+        imageLinks= (ArrayList<String>) context.imageLinks();
     }
+
     @Override
     public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-        View v = inflater.inflate(R.layout.item,parent,false);
-        PostViewHolder pvh = new PostViewHolder(v);
-        return pvh;
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflater.inflate(R.layout.item, parent, false);
+        return new PostViewHolder(v);
+
     }
 
     @Override
-    public void onBindViewHolder(PostViewHolder holder, int position) {
-        holder.image.setImageResource(images[position]);
+    public void onBindViewHolder(final PostViewHolder holder, final int position) {
+        Picasso.with(context).load(imageLinks.get(position)).into(holder.image);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, "Im clicked " + holder.getAdapterPosition(), Toast.LENGTH_SHORT).show();
 
+            }
+        });
 
     }
 
     @Override
     public int getItemCount() {
-        return images.length;
+        return imageLinks.size();
     }
-
 
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
@@ -54,7 +59,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
         public PostViewHolder(View itemView) {
             super(itemView);
-            this.image= (ImageView) itemView.findViewById(R.id.image);
+            this.image = (ImageView) itemView.findViewById(R.id.image);
         }
     }
 }
