@@ -29,14 +29,34 @@ public class ImageResponse {
     private String vote;
     private boolean in_gallery;
 
-    public String getLink()
-    {
+    public String getLink() {
         return link;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isAnimated() {
+        return animated;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public String getViews()
+    {
+        return String.valueOf(views);
     }
 
 }

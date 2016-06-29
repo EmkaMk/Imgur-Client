@@ -1,4 +1,5 @@
 package imgur.com.imgurclient;
+
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
@@ -12,8 +13,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
+
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
@@ -31,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ArrayList<NavigationItem> items = new ArrayList<>();
     private ArrayList<String> imageLinks = new ArrayList<>();
+    private TreeMap<String,List<String>> attributes=new TreeMap<>();
+    NavigationAdapter adapter;
+    private List<ImageResponse> finalResponse=new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +45,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         auth = new ImgurAuthentication();
         getTopPosts();
-        inflateTopPosts();
         populateList();
         initializeList();
-        NavigationAdapter adapter = new NavigationAdapter(this, items);
+        adapter = new NavigationAdapter(this, items);
+        this.setNavigationDrawer(adapter);
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("isTopPosts", true);
+    }
+
+
+    public void setNavigationDrawer(NavigationAdapter adapter) {
         draw_list.setAdapter(adapter);
         draw_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -52,12 +70,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("isTopPosts", true);
-    }
-
     public void getTopPosts() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
         Call<ImgurResponse<List<ImageResponse>>> call = api.getImages(auth.getHeader());
@@ -66,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {
                     getImageLinks(response);
+                    inflateTopPosts();
 
                 } else
                     Log.e(MainActivity.class.getName(), response.message());
@@ -120,24 +133,22 @@ public class MainActivity extends AppCompatActivity {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        rView.setAdapter(new ImageAdapter(this));
+        rView.setAdapter(new ImageAdapter(this,finalResponse));
     }
 
     protected void getImageLinks(Response<ImgurResponse<List<ImageResponse>>> response) {
         ImgurResponse<List<ImageResponse>> iResponse = response.body();
+        ArrayList<String> list=new ArrayList<>();
 
         for (ImageResponse imageResponse : iResponse.data) {
 
-            if (imageResponse.getType() != null) {
+            if (imageResponse.getType() != null && imageResponse.isAnimated()) {
 
-                imageLinks.add(imageResponse.getLink());
+                finalResponse.add(imageResponse);
+
             }
         }
 
-    }
-
-    public List<String> imageLinks() {
-        return imageLinks;
     }
 
 }

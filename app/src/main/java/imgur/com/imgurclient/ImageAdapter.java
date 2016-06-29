@@ -1,14 +1,21 @@
 package imgur.com.imgurclient;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
+
+import imgur.com.imgurclient.models.ImageService.ImageResponse;
 
 
 /**
@@ -18,12 +25,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
 
     MainActivity context;
-    ArrayList<String> imageLinks;
+    List<ImageResponse> response;
 
 
-    public ImageAdapter(MainActivity c) {
+    public ImageAdapter(MainActivity c,List<ImageResponse> response) {
         this.context = c;
-        imageLinks= (ArrayList<String>) context.imageLinks();
+        this.response=response;
     }
 
     @Override
@@ -36,11 +43,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public void onBindViewHolder(final PostViewHolder holder, final int position) {
-        Picasso.with(context).load(imageLinks.get(position)).into(holder.image);
+        Picasso.with(context).load(response.get(position).getLink()).into(holder.image);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "Im clicked " + holder.getAdapterPosition(), Toast.LENGTH_SHORT).show();
+                Intent i=new Intent(context,ShowImageActivity.class);
+                i.putExtra("imageLink",response.get(position).getLink());
+                i.putExtra("title",response.get(position).getTitle());
+                i.putExtra("views",response.get(position).getViews());
+                context.startActivity(i);
 
             }
         });
@@ -49,7 +60,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public int getItemCount() {
-        return imageLinks.size();
+        return response.size();
     }
 
 
