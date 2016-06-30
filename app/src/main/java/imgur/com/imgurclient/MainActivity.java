@@ -1,23 +1,27 @@
 package imgur.com.imgurclient;
 
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-
+import android.widget.TextView;
+import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
-
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
@@ -34,21 +38,57 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout draw_layout;
     private DrawerLayout mDrawerLayout;
     private ArrayList<NavigationItem> items = new ArrayList<>();
-    private ArrayList<String> imageLinks = new ArrayList<>();
-    private TreeMap<String,List<String>> attributes=new TreeMap<>();
     NavigationAdapter adapter;
-    private List<ImageResponse> finalResponse=new ArrayList<>();
+    private List<ImageResponse> finalResponse = new ArrayList<>();
+    private ImageView image;
+    private TextView title, description, views, setDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         auth = new ImgurAuthentication();
+
         getTopPosts();
         populateList();
         initializeList();
         adapter = new NavigationAdapter(this, items);
         this.setNavigationDrawer(adapter);
+    }
+
+    public void showDialog(final ImageResponse imageResponse) {
+        AlertDialog dialog = buildDialog();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+
+                title.setText(imageResponse.getTitle());
+                Picasso.with(getApplicationContext()).load(imageResponse.getLink()).into(image);
+                if (imageResponse.getDescription() != null) {
+                    setDescription.setText("Description: ");
+                }
+                description.setText(imageResponse.getDescription());
+                views.setText(imageResponse.getViews() + " views");
+
+            }
+        });
+        dialog.show();
+    }
+
+    public AlertDialog buildDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog dialog = builder.create();
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogLayout = inflater.inflate(R.layout.activity_show_image, null);
+        image = (ImageView) dialogLayout.findViewById(R.id.imageView);
+        title = (TextView) dialogLayout.findViewById(R.id.title);
+        description = (TextView) dialogLayout.findViewById(R.id.description);
+        views = (TextView) dialogLayout.findViewById(R.id.views);
+        setDescription = (TextView) dialogLayout.findViewById(R.id.fitDescription);
+        dialog.setView(dialogLayout);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        return dialog;
     }
 
 
@@ -115,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
             case 1:
                 inflateTopPosts();
                 break;
-
             case 2:
                 auth.logOut();
                 setContentView(R.layout.activity_home);
@@ -133,12 +172,11 @@ public class MainActivity extends AppCompatActivity {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        rView.setAdapter(new ImageAdapter(this,finalResponse));
+        rView.setAdapter(new ImageAdapter(this, finalResponse));
     }
 
     protected void getImageLinks(Response<ImgurResponse<List<ImageResponse>>> response) {
         ImgurResponse<List<ImageResponse>> iResponse = response.body();
-        ArrayList<String> list=new ArrayList<>();
 
         for (ImageResponse imageResponse : iResponse.data) {
 

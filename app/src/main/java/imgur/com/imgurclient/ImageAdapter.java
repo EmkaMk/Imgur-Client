@@ -28,9 +28,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
     List<ImageResponse> response;
 
 
-    public ImageAdapter(MainActivity c,List<ImageResponse> response) {
+    public ImageAdapter(MainActivity c, List<ImageResponse> response) {
         this.context = c;
-        this.response=response;
+        this.response = response;
     }
 
     @Override
@@ -43,20 +43,17 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public void onBindViewHolder(final PostViewHolder holder, final int position) {
+
         Picasso.with(context).load(response.get(position).getLink()).into(holder.image);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(context,ShowImageActivity.class);
-                i.putExtra("imageLink",response.get(position).getLink());
-                i.putExtra("title",response.get(position).getTitle());
-                i.putExtra("views",response.get(position).getViews());
-                context.startActivity(i);
-
+                context.showDialog(response.get(position));
             }
         });
 
     }
+
 
     @Override
     public int getItemCount() {
