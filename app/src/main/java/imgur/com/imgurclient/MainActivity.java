@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,9 +20,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
@@ -42,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     private List<ImageResponse> finalResponse = new ArrayList<>();
     private ImageView image;
     private TextView title, description, views, setDescription;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    ImageAdapter imageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +59,28 @@ public class MainActivity extends AppCompatActivity {
 
         getTopPosts();
         populateList();
-        initializeList();
-        adapter = new NavigationAdapter(this, items);
+        initializeVariables();
+
         this.setNavigationDrawer(adapter);
+        swipeRefresh();
+
+    }
+
+    public void swipeRefresh()
+    {
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onRefreshUpdate();
+            }
+        });
+    }
+
+    public void onRefreshUpdate() {
+        getTopPosts();
+        imageAdapter.updateAfterRefresh();
+        swipeRefreshLayout.setRefreshing(false);
+        Toast.makeText(this,"Nothing to show,posts are up to date",Toast.LENGTH_SHORT).show();
     }
 
     public void showDialog(final ImageResponse imageResponse) {
@@ -117,9 +144,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {
-                    getImageLinks(response);
+                    getImageAttributes(response);
                     inflateTopPosts();
-
                 } else
                     Log.e(MainActivity.class.getName(), response.message());
             }
@@ -138,10 +164,13 @@ public class MainActivity extends AppCompatActivity {
         items.add(new NavigationItem("Log out", R.mipmap.ic_launcher));
     }
 
-    private void initializeList() {
+    private void initializeVariables() {
+
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         draw_layout = (RelativeLayout) findViewById(R.id.drawerPane);
         draw_list = (ListView) findViewById(R.id.navList);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        adapter = new NavigationAdapter(this, items);
     }
 
 
@@ -172,17 +201,18 @@ public class MainActivity extends AppCompatActivity {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        rView.setAdapter(new ImageAdapter(this, finalResponse));
+        imageAdapter=new ImageAdapter(this,finalResponse);
+        rView.setAdapter(imageAdapter);
     }
 
-    protected void getImageLinks(Response<ImgurResponse<List<ImageResponse>>> response) {
+    protected void getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
         ImgurResponse<List<ImageResponse>> iResponse = response.body();
 
         for (ImageResponse imageResponse : iResponse.data) {
 
             if (imageResponse.getType() != null && imageResponse.isAnimated()) {
 
-                finalResponse.add(imageResponse);
+                finalResponse.add(0,imageResponse);
 
             }
         }

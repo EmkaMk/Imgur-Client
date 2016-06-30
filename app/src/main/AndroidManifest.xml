@@ -31,8 +31,6 @@
         <activity android:name=".RequestRefreshToken" />
         <activity android:name=".UploadActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".ShowImageActivity">
-        </activity>
     </application>
 
 </manifest>
