@@ -54,9 +54,9 @@ public class ImageResponse {
         return id;
     }
 
-    public String getViews()
+    public int getViews()
     {
-        return String.valueOf(views);
+        return views;
     }
 
 }

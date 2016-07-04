@@ -29,9 +29,10 @@ import java.util.List;
 
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
+import imgur.com.imgurclient.models.ImageService.ImageModel;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
-import imgur.com.imgurclient.models.ImageService.UserAccountModel;
+import imgur.com.imgurclient.models.ImageService.UserResponse;
 import imgur.com.imgurclient.navigationDrawer.NavigationAdapter;
 import imgur.com.imgurclient.navigationDrawer.NavigationItem;
 import retrofit2.Call;
@@ -45,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ArrayList<NavigationItem> items = new ArrayList<>();
     NavigationAdapter adapter;
-    private List<ImageResponse> finalResponse = new ArrayList<>();
     private ImageView image;
     private TextView title, description, views, setDescription;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -54,12 +54,18 @@ public class MainActivity extends AppCompatActivity {
     private List<ImageResponse> myPosts = new ArrayList<>();
     int id;
     private RecyclerView rView;
+    private ImageLoader imageHelper;
+
+
+    ImageLoader loader;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         auth = new ImgurAuthentication();
+        imageHelper = new GetImageInfo(ServiceGenerator.createService(ImgurAPI.class));
         getTopPosts(0);
         getUserInformation();
         populateList();
@@ -68,6 +74,19 @@ public class MainActivity extends AppCompatActivity {
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
+        loader = obtainLoader(getIntent().getExtras());
+    }
+
+    private ImageLoader obtainLoader(Bundle extras) {
+        if (extras == null) {
+            return new GetImageInfo(null);
+        }
+        return new ImageLoader() {
+            @Override
+            public void load(Callback2 call) {
+                call.onFailure();
+            }
+        };
     }
 
 
@@ -87,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Nothing to show,posts are up to date", Toast.LENGTH_SHORT).show();
     }
 
-    public void showDialog(final ImageResponse imageResponse) {
+    public void showDialog(final ImageModel imageResponse) {
         AlertDialog dialog = buildDialog();
 
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -143,27 +162,36 @@ public class MainActivity extends AppCompatActivity {
 
     public void getTopPosts(int page) {
 
-        ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
-        Call<ImgurResponse<List<ImageResponse>>> call = api.getTopPosts(auth.getHeader(),page);
-        call.enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
+        imageHelper.load(new ImageLoader.Callback2() {
             @Override
-            public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
-                if (response.isSuccessful()) {
-                    getImageAttributes(response);
-                    inflateTopPosts();
-                } else
-                    Log.e(MainActivity.class.getName(), response.message());
+            public void onSuccess(List<ImageModel> images) {
+                inflateTopPosts(images);
             }
 
             @Override
-            public void onFailure(Call<ImgurResponse<List<ImageResponse>>> call, Throwable t) {
-                t.printStackTrace();
+            public void onFailure() {
+                Log.e(MainActivity.class.getName(), "Get Top Posts failure");
+            }
+        });
+
+    }
+
+    public void getMyPosts()
+    {
+        imageHelper.load(new ImageLoader.Callback2() {
+            @Override
+            public void onSuccess(List<ImageModel> images) {
+
+            }
+
+            @Override
+            public void onFailure() {
 
             }
         });
     }
 
-    public void getMyPosts() {
+    /*public void getMyPosts() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
         Call<ImgurResponse<List<ImageResponse>>> call = api.getMyPosts(auth.getHeader(), id);
         call.enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
@@ -181,8 +209,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    Log.e(MainActivity.class.getName(), "Response is not successful!");
-                    Log.e(MainActivity.class.getName(), response.message());
+
+                    Log.e(MainActivity.class.getName(), response.message() + " My posts");
                 }
             }
 
@@ -194,24 +222,24 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }
+    }*/
 
     public void getUserInformation() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
 
-        Call<ImgurResponse<UserAccountModel>> call = api.getUserInfo(auth.getHeader(), "EmkaMK");
-        call.enqueue(new Callback<ImgurResponse<UserAccountModel>>() {
+        Call<ImgurResponse<UserResponse>> call = api.getUserInfo(auth.getHeader(), "EmkaMK");
+        call.enqueue(new Callback<ImgurResponse<UserResponse>>() {
             @Override
-            public void onResponse(Call<ImgurResponse<UserAccountModel>> call, Response<ImgurResponse<UserAccountModel>> response) {
+            public void onResponse(Call<ImgurResponse<UserResponse>> call, Response<ImgurResponse<UserResponse>> response) {
                 if (response.isSuccessful()) {
                     id = response.body().data.getId();
-                    Log.e(MainActivity.class.getName(), "Response is successful");
+
                 } else
                     Log.e(MainActivity.class.getName(), "Response not successful");
             }
 
             @Override
-            public void onFailure(Call<ImgurResponse<UserAccountModel>> call, Throwable t) {
+            public void onFailure(Call<ImgurResponse<UserResponse>> call, Throwable t) {
 
                 Log.e(MainActivity.class.getName(), "Failure");
                 t.printStackTrace();
@@ -248,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
             case 1:
-                inflateTopPosts();
+                // inflateTopPosts();
                 break;
             case 2:
                 auth.logOut();
@@ -258,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void inflateTopPosts() {
+    private void inflateTopPosts(List<ImageModel> images) {
         rView = (RecyclerView) findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager manager;
         if (getResources().getConfiguration().orientation == 1) {
@@ -267,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        imageAdapter = new ImageAdapter(this, finalResponse);
+        imageAdapter = new ImageAdapter(this, images);
         rView.setAdapter(imageAdapter);
         rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
             @Override
@@ -280,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    protected void getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
+    /*protected void getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
         ImgurResponse<List<ImageResponse>> iResponse = response.body();
 
         for (ImageResponse imageResponse : iResponse.data) {
@@ -292,6 +320,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-    }
+    }*/
 
 }

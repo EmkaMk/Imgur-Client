@@ -5,7 +5,7 @@ import java.util.List;
 import imgur.com.imgurclient.models.ImageService.Image;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
-import imgur.com.imgurclient.models.ImageService.UserAccountModel;
+import imgur.com.imgurclient.models.ImageService.UserResponse;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -13,7 +13,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
-import retrofit2.http.Query;
 
 /**
  * Created by emilija.pereska on six/20/2016.
@@ -32,7 +31,7 @@ public interface ImgurAPI {
     );
 
     @GET("/3/account/{username}")
-    Call<ImgurResponse<UserAccountModel>> getUserInfo(
+    Call<ImgurResponse<UserResponse>> getUserInfo(
             @Header("Authorization: ") String auth, @Path("username") String username
 
     );

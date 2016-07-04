@@ -6,14 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
-import imgur.com.imgurclient.models.ImageService.ImageResponse;
+import imgur.com.imgurclient.models.ImageService.ImageModel;
+
 
 /**
  * Created by emilija.pereska on 6/24/2016.
@@ -22,10 +21,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
 
     MainActivity context;
-    List<ImageResponse> response;
+    List<ImageModel> response;
 
 
-    public ImageAdapter(MainActivity c,List<ImageResponse> response) {
+    public ImageAdapter(MainActivity c, List<ImageModel> response) {
         this.context = c;
         this.response = response;
     }
@@ -53,11 +52,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public int getItemCount() {
+
         return response.size();
+
     }
 
-    public void updateAfterRefresh()
-    {
+    public void updateAfterRefresh() {
         response.clear();
 
     }
