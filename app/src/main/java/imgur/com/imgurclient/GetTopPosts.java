@@ -17,23 +17,19 @@ import retrofit2.Response;
 /**
  * Created by Emilija.Pereska on 7/4/2016.
  */
-public class GetImageInfo implements ImageLoader {
+public class GetTopPosts implements ImageLoader {
 
-    public List<ImageModel> images = new ArrayList<>();
+    private List<ImageModel> images = new ArrayList<>();
     private ImgurAPI api;
-    private ImgurAuthentication authentication;
 
-    public GetImageInfo(ImgurAPI api) {
-        authentication=new ImgurAuthentication();
-        this.api = api;
+    public GetTopPosts() {
+        this.api = ServiceGenerator.createService(ImgurAPI.class);
     }
 
     @Override
     public void load(final Callback2 callback2) {
 
-        api.getTopPosts(authentication.getHeader(), 0).enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
-
-
+        api.getTopPosts(0).enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {

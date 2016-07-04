@@ -30,7 +30,6 @@ import java.util.List;
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
-import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
 import imgur.com.imgurclient.models.ImageService.UserResponse;
 import imgur.com.imgurclient.navigationDrawer.NavigationAdapter;
@@ -51,12 +50,11 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     ImageAdapter imageAdapter;
     TextView userName;
-    private List<ImageResponse> myPosts = new ArrayList<>();
     int id;
     private RecyclerView rView;
     private ImageLoader imageHelper;
-
-
+    private UserLoader userHelper;
+    UserLoader userLoader;
     ImageLoader loader;
 
 
@@ -65,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         auth = new ImgurAuthentication();
-        imageHelper = new GetImageInfo(ServiceGenerator.createService(ImgurAPI.class));
+        imageHelper = new GetTopPosts();
         getTopPosts(0);
         getUserInformation();
         populateList();
@@ -79,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageLoader obtainLoader(Bundle extras) {
         if (extras == null) {
-            return new GetImageInfo(null);
+            return new GetTopPosts();
         }
         return new ImageLoader() {
             @Override
@@ -165,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         imageHelper.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
-                inflateTopPosts(images);
+                inflatePosts(images);
             }
 
             @Override
@@ -176,8 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void getMyPosts()
-    {
+    public void getMyPosts() {
         imageHelper.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
@@ -227,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
     public void getUserInformation() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
 
-        Call<ImgurResponse<UserResponse>> call = api.getUserInfo(auth.getHeader(), "EmkaMK");
+        Call<ImgurResponse<UserResponse>> call = api.getUserInfo("EmkaMK");
         call.enqueue(new Callback<ImgurResponse<UserResponse>>() {
             @Override
             public void onResponse(Call<ImgurResponse<UserResponse>> call, Response<ImgurResponse<UserResponse>> response) {
@@ -276,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
             case 1:
-                // inflateTopPosts();
+                // inflatePosts();
                 break;
             case 2:
                 auth.logOut();
@@ -286,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void inflateTopPosts(List<ImageModel> images) {
+    private void inflatePosts(List<ImageModel> images) {
         rView = (RecyclerView) findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager manager;
         if (getResources().getConfiguration().orientation == 1) {
@@ -307,19 +304,5 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-    /*protected void getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
-        ImgurResponse<List<ImageResponse>> iResponse = response.body();
-
-        for (ImageResponse imageResponse : iResponse.data) {
-
-            if (imageResponse.getType() != null && imageResponse.isAnimated()) {
-
-                finalResponse.add(0, imageResponse);
-
-            }
-        }
-
-    }*/
 
 }

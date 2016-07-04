@@ -22,24 +22,24 @@ public interface ImgurAPI {
     @FormUrlEncoded
     @POST("/3/image")
     Call<ImgurResponse<Image>> uploadImage(
-            @Header("Authorization: ") String auth, @Field("image") String image);
+            @Field("image") String image);
 
 
     @GET("/3/gallery/hot/viral/{page}.json")
     Call<ImgurResponse<List<ImageResponse>>> getTopPosts(
-            @Header("Authorization: ") String auth,@Path("page") int page
+            @Path("page") int page
     );
 
     @GET("/3/account/{username}")
     Call<ImgurResponse<UserResponse>> getUserInfo(
-            @Header("Authorization: ") String auth, @Path("username") String username
+            @Path("username") String username
 
     );
 
 
     @GET("/3/gallery/{user}/time/0.json")
     Call<ImgurResponse<List<ImageResponse>>> getMyPosts(
-            @Header("Authorization: ") String auth, @Path("user") int id
+            @Path("user") int id
     );
 
 

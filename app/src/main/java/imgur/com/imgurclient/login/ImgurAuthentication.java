@@ -32,7 +32,7 @@ import imgur.com.imgurclient.LoginModel;
 public class ImgurAuthentication {
 
     static final String SHARED_PREFERENCES = "shared_prefs";
-    LoginModel model =new LoginModel();
+    LoginModel model = new LoginModel();
 
 
     private SharedPreferences getPreferences() {
@@ -94,14 +94,12 @@ public class ImgurAuthentication {
         return result.toString();
     }
 
-    public String getHeader()
-    {
-      return   "Bearer " + getPreferences().getString("access_token",null);
+    public String getAccessToken() {
+        return getPreferences().getString("access_token", null);
     }
 
-    public String getUsername()
-    {
-        return getPreferences().getString("account_username",null);
+    public String getUsername() {
+        return getPreferences().getString("account_username", null);
     }
 
     public void logOut() {

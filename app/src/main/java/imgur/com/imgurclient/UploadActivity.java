@@ -66,7 +66,7 @@ public class UploadActivity extends AppCompatActivity {
 
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
         Log.e(UploadActivity.class.getName(), "Service created");
-        Call<ImgurResponse<Image>> call = api.uploadImage(authentication.getHeader(), encodedImage());
+        Call<ImgurResponse<Image>> call = api.uploadImage(encodedImage());
         Log.e(UploadActivity.class.getName(), "Call created");
         call.enqueue(new retrofit2.Callback<ImgurResponse<Image>>() {
             @Override
