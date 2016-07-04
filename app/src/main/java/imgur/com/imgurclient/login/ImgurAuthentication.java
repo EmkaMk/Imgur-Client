@@ -46,7 +46,7 @@ public class ImgurAuthentication {
         model.setRefresh_token(refresh_token);
         model.setExpires_in(expiration);
         model.setToken_type(token_type);
-        model.setToken_type(account_username);
+        model.setAccount_username(account_username);
     }
 
     private void populatePreferences() {
@@ -97,6 +97,11 @@ public class ImgurAuthentication {
     public String getHeader()
     {
       return   "Bearer " + getPreferences().getString("access_token",null);
+    }
+
+    public String getUsername()
+    {
+        return getPreferences().getString("account_username",null);
     }
 
     public void logOut() {

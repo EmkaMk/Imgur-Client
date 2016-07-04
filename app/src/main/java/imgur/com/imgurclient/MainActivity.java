@@ -23,15 +23,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
+import imgur.com.imgurclient.models.ImageService.UserAccountModel;
 import imgur.com.imgurclient.navigationDrawer.NavigationAdapter;
 import imgur.com.imgurclient.navigationDrawer.NavigationItem;
 import retrofit2.Call;
@@ -50,24 +50,28 @@ public class MainActivity extends AppCompatActivity {
     private TextView title, description, views, setDescription;
     private SwipeRefreshLayout swipeRefreshLayout;
     ImageAdapter imageAdapter;
+    TextView userName;
+    private List<ImageResponse> myPosts = new ArrayList<>();
+    int id;
+    private RecyclerView rView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         auth = new ImgurAuthentication();
-
-        getTopPosts();
+        getTopPosts(0);
+        getUserInformation();
         populateList();
         initializeVariables();
-
+        getMyPosts();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
     }
 
-    public void swipeRefresh()
-    {
+
+    public void swipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -77,10 +81,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRefreshUpdate() {
-        getTopPosts();
+        getTopPosts(0);
         imageAdapter.updateAfterRefresh();
         swipeRefreshLayout.setRefreshing(false);
-        Toast.makeText(this,"Nothing to show,posts are up to date",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Nothing to show,posts are up to date", Toast.LENGTH_SHORT).show();
     }
 
     public void showDialog(final ImageResponse imageResponse) {
@@ -137,9 +141,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void getTopPosts() {
+    public void getTopPosts(int page) {
+
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
-        Call<ImgurResponse<List<ImageResponse>>> call = api.getImages(auth.getHeader());
+        Call<ImgurResponse<List<ImageResponse>>> call = api.getTopPosts(auth.getHeader(),page);
         call.enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
@@ -158,7 +163,67 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void getMyPosts() {
+        ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
+        Call<ImgurResponse<List<ImageResponse>>> call = api.getMyPosts(auth.getHeader(), id);
+        call.enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
+            @Override
+            public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
+                ImgurResponse<List<ImageResponse>> iResponse = response.body();
+                if (response.isSuccessful()) {
+                    for (ImageResponse imageResponse : iResponse.data) {
+
+                        if (imageResponse.getType() != null && imageResponse.isAnimated()) {
+
+                            myPosts.add(0, imageResponse);
+
+                        }
+                    }
+
+                } else {
+                    Log.e(MainActivity.class.getName(), "Response is not successful!");
+                    Log.e(MainActivity.class.getName(), response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ImgurResponse<List<ImageResponse>>> call, Throwable t) {
+
+
+                t.printStackTrace();
+
+            }
+        });
+    }
+
+    public void getUserInformation() {
+        ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
+
+        Call<ImgurResponse<UserAccountModel>> call = api.getUserInfo(auth.getHeader(), "EmkaMK");
+        call.enqueue(new Callback<ImgurResponse<UserAccountModel>>() {
+            @Override
+            public void onResponse(Call<ImgurResponse<UserAccountModel>> call, Response<ImgurResponse<UserAccountModel>> response) {
+                if (response.isSuccessful()) {
+                    id = response.body().data.getId();
+                    Log.e(MainActivity.class.getName(), "Response is successful");
+                } else
+                    Log.e(MainActivity.class.getName(), "Response not successful");
+            }
+
+            @Override
+            public void onFailure(Call<ImgurResponse<UserAccountModel>> call, Throwable t) {
+
+                Log.e(MainActivity.class.getName(), "Failure");
+                t.printStackTrace();
+
+            }
+        });
+    }
+
+
     private void populateList() {
+        userName = (TextView) findViewById(R.id.userName);
+        userName.setText("EmkaMK");
         items.add(new NavigationItem("Upload new photo", R.mipmap.ic_launcher));
         items.add(new NavigationItem("My posts", R.mipmap.ic_launcher));
         items.add(new NavigationItem("Log out", R.mipmap.ic_launcher));
@@ -171,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         draw_list = (ListView) findViewById(R.id.navList);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         adapter = new NavigationAdapter(this, items);
+
     }
 
 
@@ -193,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void inflateTopPosts() {
-        RecyclerView rView = (RecyclerView) findViewById(R.id.recycler_view);
+        rView = (RecyclerView) findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager manager;
         if (getResources().getConfiguration().orientation == 1) {
             manager = new GridLayoutManager(MainActivity.this, 2);
@@ -201,9 +267,18 @@ public class MainActivity extends AppCompatActivity {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        imageAdapter=new ImageAdapter(this,finalResponse);
+        imageAdapter = new ImageAdapter(this, finalResponse);
         rView.setAdapter(imageAdapter);
+        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                getTopPosts(page);
+
+            }
+        });
+
     }
+
 
     protected void getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
         ImgurResponse<List<ImageResponse>> iResponse = response.body();
@@ -212,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (imageResponse.getType() != null && imageResponse.isAnimated()) {
 
-                finalResponse.add(0,imageResponse);
+                finalResponse.add(0, imageResponse);
 
             }
         }

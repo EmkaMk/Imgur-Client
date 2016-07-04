@@ -19,7 +19,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private static final String URL = "https://api.imgur.com/oauth2/authorize?client_id=" + Constants.CLIENT_ID + "&response_type=token";
 
-    Button login, logout, upload;
+    Button login;
     ImgurAuthentication auth;
 
     @Override
@@ -99,7 +99,6 @@ public class HomeActivity extends AppCompatActivity {
             if (data != null && data.toString().contains(Constants.REDIRECT_URL)) {
                 this.getURIValues(data, auth);
                 setContentView(R.layout.activity_home);
-                //Toast.makeText(HomeActivity.this, "Logged in!", Toast.LENGTH_LONG).show();
 
             } else {
 
@@ -110,7 +109,6 @@ public class HomeActivity extends AppCompatActivity {
 
     public void getURIValues(Uri uri, ImgurAuthentication auth) {
         HashMap<String, String> map = new HashMap<>();
-        Matcher m;
         String access_token, refresh_token, token_type, account_username;
         Long expires_in;
         Pattern a_token = Pattern.compile("access_token=([^&]*)");
