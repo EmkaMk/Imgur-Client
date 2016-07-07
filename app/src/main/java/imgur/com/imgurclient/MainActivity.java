@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -52,33 +53,36 @@ public class MainActivity extends AppCompatActivity {
     TextView userName;
     int id;
     private RecyclerView rView;
-    private ImageLoader imageHelper;
-    private UserLoader userHelper;
-    UserLoader userLoader;
-    ImageLoader loader;
+    private ImageLoader topPosts;
+    private ImageLoader myPosts;
+    ImageLoader loaderTopPosts;
+    ImageLoader loaderMyPosts;
+    private List<ImageModel> images=new ArrayList<>();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initializeVariables();
         auth = new ImgurAuthentication();
-        imageHelper = new GetTopPosts();
+        topPosts = new GetTopPosts();
+        myPosts = new GetMyPosts();
         getTopPosts(0);
         getUserInformation();
         populateList();
-        initializeVariables();
-        getMyPosts();
+       // getMyPosts();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
-        loader = obtainLoader(getIntent().getExtras());
+        loaderTopPosts = obtainTopPostsLoader(getIntent().getExtras());
     }
 
-    private ImageLoader obtainLoader(Bundle extras) {
+    private ImageLoader obtainTopPostsLoader(Bundle extras) {
         if (extras == null) {
             return new GetTopPosts();
         }
+
         return new ImageLoader() {
             @Override
             public void load(Callback2 call) {
@@ -87,6 +91,14 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+
+    /*@Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.getStringExtra("MyPosts").equals("MyPosts")) {
+            this.getMyPosts();
+        }
+    }*/
 
     public void swipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -106,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void showDialog(final ImageModel imageResponse) {
         AlertDialog dialog = buildDialog();
-
+        dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
@@ -121,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
         dialog.show();
     }
 
@@ -160,9 +173,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void getTopPosts(int page) {
 
-        imageHelper.load(new ImageLoader.Callback2() {
+        topPosts.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
+
                 inflatePosts(images);
             }
 
@@ -172,50 +186,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
-    public void getMyPosts() {
-        imageHelper.load(new ImageLoader.Callback2() {
+    /*public void getMyPosts() {
+        topPosts.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
+                inflatePosts(images);
+                Toast.makeText(MainActivity.this, "Im in my posts", Toast.LENGTH_SHORT).show();
 
             }
 
             @Override
             public void onFailure() {
-
-            }
-        });
-    }
-
-    /*public void getMyPosts() {
-        ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
-        Call<ImgurResponse<List<ImageResponse>>> call = api.getMyPosts(auth.getHeader(), id);
-        call.enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
-            @Override
-            public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
-                ImgurResponse<List<ImageResponse>> iResponse = response.body();
-                if (response.isSuccessful()) {
-                    for (ImageResponse imageResponse : iResponse.data) {
-
-                        if (imageResponse.getType() != null && imageResponse.isAnimated()) {
-
-                            myPosts.add(0, imageResponse);
-
-                        }
-                    }
-
-                } else {
-
-                    Log.e(MainActivity.class.getName(), response.message() + " My posts");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ImgurResponse<List<ImageResponse>>> call, Throwable t) {
-
-
-                t.printStackTrace();
+                Log.e(MainActivity.class.getName(), "Get Top Posts failure");
 
             }
         });
@@ -233,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else
                     Log.e(MainActivity.class.getName(), "Response not successful");
+
             }
 
             @Override
@@ -244,7 +230,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void inflatePosts(List<ImageModel> images) {
+        rView = (RecyclerView) findViewById(R.id.recycler_view);
+        RecyclerView.LayoutManager manager;
+        if (getResources().getConfiguration().orientation == 1) {
+            manager = new GridLayoutManager(MainActivity.this, 2);
+        } else {
+            manager = new GridLayoutManager(MainActivity.this, 3);
+        }
+        rView.setLayoutManager(manager);
+        imageAdapter = new ImageAdapter(this, images);
+        rView.setAdapter(imageAdapter);
+        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                getTopPosts(0);
+            }
+        });
 
+    }
 
     private void populateList() {
         userName = (TextView) findViewById(R.id.userName);
@@ -277,32 +281,16 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 2:
                 auth.logOut();
-                setContentView(R.layout.activity_home);
+                startActivity(new Intent(this, HomeActivity.class).setAction("CUSTOM_ACTION"));
+                Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
                 break;
         }
 
     }
 
-    private void inflatePosts(List<ImageModel> images) {
-        rView = (RecyclerView) findViewById(R.id.recycler_view);
-        RecyclerView.LayoutManager manager;
-        if (getResources().getConfiguration().orientation == 1) {
-            manager = new GridLayoutManager(MainActivity.this, 2);
-        } else {
-            manager = new GridLayoutManager(MainActivity.this, 3);
-        }
-        rView.setLayoutManager(manager);
-        imageAdapter = new ImageAdapter(this, images);
-        rView.setAdapter(imageAdapter);
-        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                getTopPosts(page);
 
-            }
-        });
 
-    }
+
 
 
 }

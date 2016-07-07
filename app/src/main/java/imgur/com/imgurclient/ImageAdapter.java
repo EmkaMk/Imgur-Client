@@ -29,6 +29,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         this.response = response;
     }
 
+    public void setImages(List<ImageModel> images)
+    {
+        this.response=images;
+    }
+
     @Override
     public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

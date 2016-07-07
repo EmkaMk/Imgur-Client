@@ -53,7 +53,10 @@ public class ServiceGenerator {
         }
 
         private boolean isAccessTokenValid() {
-            return true;
+
+            if (!auth.getAccessToken().isEmpty())
+                return true;
+            return false;
         }
 
         private void refreshAccessTokenAndBlock() {

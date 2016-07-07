@@ -54,12 +54,12 @@ public class HomeActivity extends AppCompatActivity {
                 this.getURIValues(data, auth);
                 setContentView(R.layout.activity_home);
                 Toast.makeText(HomeActivity.this, "Logged in!", Toast.LENGTH_LONG).show();
+                finish();
 
             } else {
                 Toast.makeText(HomeActivity.this, "Login is unsuccessful", Toast.LENGTH_LONG).show();
             }
         }
-
 
     }
 
@@ -73,11 +73,11 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        new RequestRefreshToken().execute();
         if (auth.isLoggedIn()) {
             setContentView(R.layout.activity_main);
             Intent i = new Intent(this, MainActivity.class);
             startActivity(i);
+            finish();
 
         } else {
 
@@ -89,20 +89,6 @@ public class HomeActivity extends AppCompatActivity {
                     startActivityForResult(browserIntent, 10);
                 }
             });
-        }
-
-
-        if (getIntent().getAction().equals(Intent.ACTION_VIEW)) // uspesno logiranje
-        {
-
-            Uri data = getIntent().getData();
-            if (data != null && data.toString().contains(Constants.REDIRECT_URL)) {
-                this.getURIValues(data, auth);
-                setContentView(R.layout.activity_home);
-
-            } else {
-
-            }
         }
     }
 

@@ -1,5 +1,6 @@
 package imgur.com.imgurclient;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,6 +33,7 @@ public class UploadActivity extends AppCompatActivity {
     boolean uploaded = false;
     Uri imageUri;
     ImgurAuthentication authentication;
+    ProgressDialog progressDialog;
 
 
     @Override
@@ -62,21 +64,26 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private void uploadSelectedImage() {
-        Toast.makeText(UploadActivity.this, "Im clicked", Toast.LENGTH_LONG).show();
 
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
         Log.e(UploadActivity.class.getName(), "Service created");
         Call<ImgurResponse<Image>> call = api.uploadImage(encodedImage());
         Log.e(UploadActivity.class.getName(), "Call created");
+        progressDialog = ProgressDialog.show(this, "Uploading image", "Please wait while the image is being uploaded", true);
         call.enqueue(new retrofit2.Callback<ImgurResponse<Image>>() {
             @Override
             public void onResponse(Call<ImgurResponse<Image>> call, Response<ImgurResponse<Image>> response) {
                 if (response.isSuccessful()) {
 
+                    progressDialog.dismiss();
+
                     Toast.makeText(UploadActivity.this, "Successful upload", Toast.LENGTH_LONG).show();
+                    setContentView(R.layout.image_chooser);
+                    startActivity(new Intent(UploadActivity.this, MainActivity.class).putExtra("MyPosts", "MyPosts"));
 
                 }
             }
+
             @Override
             public void onFailure(Call<ImgurResponse<Image>> call, Throwable t) {
 

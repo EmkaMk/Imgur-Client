@@ -45,7 +45,6 @@ public class GetUserInfo implements UserLoader {
             @Override
             public void onFailure(Call<ImgurResponse<UserResponse>> call, Throwable t) {
                 t.printStackTrace();
-
             }
         });
 
