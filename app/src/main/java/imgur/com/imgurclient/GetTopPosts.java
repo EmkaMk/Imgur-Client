@@ -21,30 +21,40 @@ public class GetTopPosts implements ImageLoader {
 
     private List<ImageModel> images = new ArrayList<>();
     private ImgurAPI api;
+    private int page=0;
 
     public GetTopPosts() {
         this.api = ServiceGenerator.createService(ImgurAPI.class);
+        Log.e(GetTopPosts.class.getName(),"Im created");
     }
 
     @Override
     public void load(final Callback2 callback2) {
 
-        api.getTopPosts(0).enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
+        Log.e(GetTopPosts.class.getName(),String.valueOf(page));
+
+        api.getTopPosts(page).enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {
+                    Log.e(GetTopPosts.class.getName(),call.request().toString());
                     images = getImageAttributes(response);
                     callback2.onSuccess(images);
                 } else
                     Log.e(MainActivity.class.getName(), response.message());
             }
 
+
             @Override
             public void onFailure(Call<ImgurResponse<List<ImageResponse>>> call, Throwable t) {
                 t.printStackTrace();
             }
 
+
         });
+
+        page++;
+
     }
 
     protected List<ImageModel> getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {

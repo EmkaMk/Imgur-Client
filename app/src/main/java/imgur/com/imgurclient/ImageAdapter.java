@@ -24,14 +24,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
     List<ImageModel> response;
 
 
-    public ImageAdapter(MainActivity c, List<ImageModel> response) {
+    public ImageAdapter(MainActivity c) {
         this.context = c;
-        this.response = response;
+
     }
 
-    public void setImages(List<ImageModel> images)
-    {
-        this.response=images;
+    public void setImages(List<ImageModel> images) {
+        this.response = images;
     }
 
     @Override
@@ -77,5 +76,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
             this.image = (ImageView) itemView.findViewById(R.id.image);
         }
     }
+
 
 }

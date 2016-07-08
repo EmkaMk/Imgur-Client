@@ -9,6 +9,9 @@ import imgur.com.imgurclient.models.ImageService.ImageModel;
  */
 public interface ImageLoader {
 
+
+
+
     interface Callback2 {
 
         void onSuccess(List<ImageModel> images);

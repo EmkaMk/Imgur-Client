@@ -53,11 +53,9 @@ public class MainActivity extends AppCompatActivity {
     TextView userName;
     int id;
     private RecyclerView rView;
-    private ImageLoader topPosts;
     private ImageLoader myPosts;
     ImageLoader loaderTopPosts;
-    ImageLoader loaderMyPosts;
-    private List<ImageModel> images=new ArrayList<>();
+    private RecyclerView.LayoutManager manager;
 
 
     @Override
@@ -66,16 +64,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initializeVariables();
         auth = new ImgurAuthentication();
-        topPosts = new GetTopPosts();
+        setupRecyclerView();
         myPosts = new GetMyPosts();
-        getTopPosts(0);
+        getTopPosts();
         getUserInformation();
         populateList();
-       // getMyPosts();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
-        loaderTopPosts = obtainTopPostsLoader(getIntent().getExtras());
+
     }
 
     private ImageLoader obtainTopPostsLoader(Bundle extras) {
@@ -110,10 +107,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRefreshUpdate() {
-        getTopPosts(0);
+        getTopPosts();
         imageAdapter.updateAfterRefresh();
         swipeRefreshLayout.setRefreshing(false);
-        Toast.makeText(this, "Nothing to show,posts are up to date", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(this, "Nothing to show,posts are up to date", Toast.LENGTH_SHORT).show();
     }
 
     public void showDialog(final ImageModel imageResponse) {
@@ -171,9 +168,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void getTopPosts(int page) {
+    public void getTopPosts() {
 
-        topPosts.load(new ImageLoader.Callback2() {
+
+        loaderTopPosts.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
 
@@ -188,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
 
     /*public void getMyPosts() {
         topPosts.load(new ImageLoader.Callback2() {
@@ -230,23 +230,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void inflatePosts(List<ImageModel> images) {
+
+    private void setupRecyclerView() {
         rView = (RecyclerView) findViewById(R.id.recycler_view);
-        RecyclerView.LayoutManager manager;
+
         if (getResources().getConfiguration().orientation == 1) {
             manager = new GridLayoutManager(MainActivity.this, 2);
         } else {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
         rView.setLayoutManager(manager);
-        imageAdapter = new ImageAdapter(this, images);
+        imageAdapter = new ImageAdapter(this);
+
+    }
+
+    private void inflatePosts(List<ImageModel> images) {
+
+        imageAdapter.setImages(images);
         rView.setAdapter(imageAdapter);
+
+
         rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
-                getTopPosts(0);
+                getTopPosts();
             }
         });
+
 
     }
 
@@ -265,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
         draw_list = (ListView) findViewById(R.id.navList);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         adapter = new NavigationAdapter(this, items);
+        loaderTopPosts = obtainTopPostsLoader(getIntent().getExtras());
 
     }
 
@@ -287,10 +298,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-
-
-
 
 
 }

@@ -28,10 +28,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity android:name=".RequestRefreshToken" />
         <activity android:name=".UploadActivity" />
-        <activity android:name=".MainActivity">
-
+        <activity android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize">
             </activity>
 
     </application>
