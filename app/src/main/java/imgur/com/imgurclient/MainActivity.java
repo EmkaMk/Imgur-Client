@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
     TextView userName;
     int id;
     private RecyclerView rView;
-    private ImageLoader myPosts;
     ImageLoader loaderTopPosts;
     private RecyclerView.LayoutManager manager;
 
@@ -65,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         initializeVariables();
         auth = new ImgurAuthentication();
         setupRecyclerView();
-        myPosts = new GetMyPosts();
         getTopPosts();
         getUserInformation();
         populateList();
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
     private ImageLoader obtainTopPostsLoader(Bundle extras) {
         if (extras == null) {
@@ -107,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRefreshUpdate() {
-        getTopPosts();
         imageAdapter.updateAfterRefresh();
+        getTopPosts();
         swipeRefreshLayout.setRefreshing(false);
-        // Toast.makeText(this, "Nothing to show,posts are up to date", Toast.LENGTH_SHORT).show();
+        imageAdapter.notifyDataSetChanged();
     }
 
     public void showDialog(final ImageModel imageResponse) {
@@ -184,27 +183,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
     }
-
-
-
-    /*public void getMyPosts() {
-        topPosts.load(new ImageLoader.Callback2() {
-            @Override
-            public void onSuccess(List<ImageModel> images) {
-                inflatePosts(images);
-                Toast.makeText(MainActivity.this, "Im in my posts", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onFailure() {
-                Log.e(MainActivity.class.getName(), "Get Top Posts failure");
-
-            }
-        });
-    }*/
 
     public void getUserInformation() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
@@ -233,14 +212,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         rView = (RecyclerView) findViewById(R.id.recycler_view);
-
         if (getResources().getConfiguration().orientation == 1) {
             manager = new GridLayoutManager(MainActivity.this, 2);
         } else {
             manager = new GridLayoutManager(MainActivity.this, 3);
         }
+
         rView.setLayoutManager(manager);
         imageAdapter = new ImageAdapter(this);
+
+        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                getTopPosts();
+            }
+        });
+
 
     }
 
@@ -250,12 +237,6 @@ public class MainActivity extends AppCompatActivity {
         rView.setAdapter(imageAdapter);
 
 
-        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                getTopPosts();
-            }
-        });
 
 
     }

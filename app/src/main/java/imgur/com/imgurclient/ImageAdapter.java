@@ -2,6 +2,7 @@ package imgur.com.imgurclient;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,10 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import imgur.com.imgurclient.models.ImageService.Image;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 
 
@@ -26,11 +29,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     public ImageAdapter(MainActivity c) {
         this.context = c;
+        response=new ArrayList<>();
 
     }
 
     public void setImages(List<ImageModel> images) {
-        this.response = images;
+        this.response.addAll(images);
     }
 
     @Override
@@ -57,8 +61,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
     @Override
     public int getItemCount() {
 
-        return response.size();
-
+            return response.size();
     }
 
     public void updateAfterRefresh() {

@@ -25,13 +25,11 @@ public class GetTopPosts implements ImageLoader {
 
     public GetTopPosts() {
         this.api = ServiceGenerator.createService(ImgurAPI.class);
-        Log.e(GetTopPosts.class.getName(),"Im created");
     }
 
     @Override
     public void load(final Callback2 callback2) {
 
-        Log.e(GetTopPosts.class.getName(),String.valueOf(page));
 
         api.getTopPosts(page).enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
