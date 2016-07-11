@@ -1,6 +1,7 @@
 package imgur.com.imgurclient;
 
 import java.io.IOException;
+import java.util.Random;
 
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import okhttp3.Interceptor;
@@ -53,14 +54,16 @@ public class ServiceGenerator {
         }
 
         private boolean isAccessTokenValid() {
-
-            if (!auth.getAccessToken().isEmpty())
-                return true;
-            return false;
+            final String accessToken = auth.getAccessToken();
+//            todo
+//            if (accessToken == null) {
+//                return false;
+//            }
+//            return !accessToken.isEmpty();
+            return accessToken != null && !accessToken.isEmpty();
         }
 
         private void refreshAccessTokenAndBlock() {
-
         }
     }
 
@@ -78,7 +81,6 @@ public class ServiceGenerator {
         }
 
         private void refreshAccessToken() {
-
         }
     }
 }

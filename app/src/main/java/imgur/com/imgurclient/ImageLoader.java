@@ -1,6 +1,8 @@
 package imgur.com.imgurclient;
 
+import java.io.IOException;
 import java.util.List;
+
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 
 
@@ -9,15 +11,14 @@ import imgur.com.imgurclient.models.ImageService.ImageModel;
  */
 public interface ImageLoader {
 
-
-
-
     interface Callback2 {
 
-        void onSuccess(List<ImageModel> images);
+        void onSuccess(List<ImageModel> images) throws IOException;
 
         void onFailure();
     }
 
-    void load(Callback2 call);
+    void load(Callback2 call, int page);
+
+    boolean loadRefreshed(Callback2 call);
 }

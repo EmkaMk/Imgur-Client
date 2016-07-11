@@ -29,12 +29,17 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     public ImageAdapter(MainActivity c) {
         this.context = c;
-        response=new ArrayList<>();
-
+        response = new ArrayList<>();
     }
 
-    public void setImages(List<ImageModel> images) {
-        this.response.addAll(images);
+    public void addImages(List<ImageModel> images) {
+        if (images == null || images.isEmpty()) {
+            return;
+        }
+        int previousSize = response.size();
+        response.addAll(images);
+        int currentSize = response.size();
+        notifyItemRangeInserted(previousSize, currentSize);
     }
 
     @Override
@@ -42,33 +47,29 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View v = inflater.inflate(R.layout.item, parent, false);
         return new PostViewHolder(v);
-
     }
 
     @Override
     public void onBindViewHolder(final PostViewHolder holder, final int position) {
-
         Picasso.with(context).load(response.get(position).getLink()).into(holder.image);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.showDialog(response.get(position));
+                context.showDialog(response.get(holder.getAdapterPosition()));
             }
         });
-
     }
 
     @Override
     public int getItemCount() {
-
-            return response.size();
+        return response.size();
     }
 
     public void updateAfterRefresh() {
+        int size = response.size();
         response.clear();
-
+        notifyItemRangeRemoved(0, size);
     }
-
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
 

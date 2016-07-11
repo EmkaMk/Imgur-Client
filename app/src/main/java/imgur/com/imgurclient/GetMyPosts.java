@@ -2,6 +2,7 @@ package imgur.com.imgurclient;
 
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class GetMyPosts implements ImageLoader {
     }
 
     @Override
-    public void load(final Callback2 callback2) {
+    public void load(final Callback2 callback2,int page) {
 
         api.getMyPosts("EmkaMK").enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
@@ -34,7 +35,11 @@ public class GetMyPosts implements ImageLoader {
                 if (response.isSuccessful()) {
                     Log.e(GetMyPosts.class.getName(), "Request is successfull");
                     images = getImageAttributes(response);
-                    callback2.onSuccess(images);
+                    try {
+                        callback2.onSuccess(images);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     Log.e(MainActivity.class.getName(), response.message());
                 }
@@ -47,6 +52,11 @@ public class GetMyPosts implements ImageLoader {
             }
         });
 
+    }
+
+    @Override
+    public boolean loadRefreshed(Callback2 call) {
+        return true;
     }
 
     protected List<ImageModel> getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {

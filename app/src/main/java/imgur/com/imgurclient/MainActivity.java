@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    ListView draw_list;
+    ListView drawList;
     ImgurAuthentication auth;
     RelativeLayout draw_layout;
     private DrawerLayout mDrawerLayout;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rView;
     ImageLoader loaderTopPosts;
     private RecyclerView.LayoutManager manager;
+    private ImageSaver saveImage;
 
 
     @Override
@@ -64,37 +66,18 @@ public class MainActivity extends AppCompatActivity {
         initializeVariables();
         auth = new ImgurAuthentication();
         setupRecyclerView();
-        getTopPosts();
+        getTopPosts(0);
         getUserInformation();
         populateList();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
-
     }
 
 
-    private ImageLoader obtainTopPostsLoader(Bundle extras) {
-        if (extras == null) {
-            return new GetTopPosts();
-        }
-
-        return new ImageLoader() {
-            @Override
-            public void load(Callback2 call) {
-                call.onFailure();
-            }
-        };
+    private ImageLoader obtainTopPostsLoader() {
+        return new GetTopPosts();
     }
-
-
-    /*@Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (intent.getStringExtra("MyPosts").equals("MyPosts")) {
-            this.getMyPosts();
-        }
-    }*/
 
     public void swipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -106,10 +89,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRefreshUpdate() {
-        imageAdapter.updateAfterRefresh();
-        getTopPosts();
+        if (tryRefresh()) {
+            imageAdapter.updateAfterRefresh();
+        }
         swipeRefreshLayout.setRefreshing(false);
-        imageAdapter.notifyDataSetChanged();
     }
 
     public void showDialog(final ImageModel imageResponse) {
@@ -148,17 +131,9 @@ public class MainActivity extends AppCompatActivity {
         return dialog;
     }
 
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("isTopPosts", true);
-    }
-
-
     public void setNavigationDrawer(NavigationAdapter adapter) {
-        draw_list.setAdapter(adapter);
-        draw_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        drawList.setAdapter(adapter);
+        drawList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItemFromDrawer(position);
@@ -167,37 +142,48 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void getTopPosts() {
-
-
+    public void getTopPosts(int page) {
         loaderTopPosts.load(new ImageLoader.Callback2() {
             @Override
-            public void onSuccess(List<ImageModel> images) {
-
-                inflatePosts(images);
+            public void onSuccess(List<ImageModel> images) throws IOException {
+                imageAdapter.addImages(images);
+                saveImages((ArrayList<ImageModel>) images);
             }
 
             @Override
             public void onFailure() {
                 Log.e(MainActivity.class.getName(), "Get Top Posts failure");
             }
-        });
+        }, page);
 
+    }
+
+    public boolean tryRefresh() {
+        return loaderTopPosts.loadRefreshed(new ImageLoader.Callback2() {
+            @Override
+            public void onSuccess(List<ImageModel> images) {
+                imageAdapter.addImages(images);
+            }
+
+            @Override
+            public void onFailure() {
+                Log.e(MainActivity.class.getName(), "No refreshed");
+                Toast.makeText(MainActivity.this, "Nothing to update", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void getUserInformation() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
-
         Call<ImgurResponse<UserResponse>> call = api.getUserInfo("EmkaMK");
         call.enqueue(new Callback<ImgurResponse<UserResponse>>() {
             @Override
             public void onResponse(Call<ImgurResponse<UserResponse>> call, Response<ImgurResponse<UserResponse>> response) {
                 if (response.isSuccessful()) {
                     id = response.body().data.getId();
-
-                } else
+                } else {
                     Log.e(MainActivity.class.getName(), "Response not successful");
-
+                }
             }
 
             @Override
@@ -220,25 +206,14 @@ public class MainActivity extends AppCompatActivity {
 
         rView.setLayoutManager(manager);
         imageAdapter = new ImageAdapter(this);
+        rView.setAdapter(imageAdapter);
 
         rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
-                getTopPosts();
+                getTopPosts(page);
             }
         });
-
-
-    }
-
-    private void inflatePosts(List<ImageModel> images) {
-
-        imageAdapter.setImages(images);
-        rView.setAdapter(imageAdapter);
-
-
-
-
     }
 
     private void populateList() {
@@ -253,11 +228,16 @@ public class MainActivity extends AppCompatActivity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         draw_layout = (RelativeLayout) findViewById(R.id.drawerPane);
-        draw_list = (ListView) findViewById(R.id.navList);
+        drawList = (ListView) findViewById(R.id.navList);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         adapter = new NavigationAdapter(this, items);
-        loaderTopPosts = obtainTopPostsLoader(getIntent().getExtras());
+        loaderTopPosts = obtainTopPostsLoader();
+        saveImage = new InternalStorageSaver();
 
+    }
+
+    private void saveImages(ArrayList<ImageModel> images) throws IOException {
+        // saveImage.saveImages(images,this);
     }
 
 
