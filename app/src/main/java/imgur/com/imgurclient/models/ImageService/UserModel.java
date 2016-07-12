@@ -32,4 +32,8 @@ public class UserModel {
     public void setBio(String bio) {
         this.bio = bio;
     }
+
+    public void setId(String id) {
+        this.id=Integer.valueOf(id);
+    }
 }

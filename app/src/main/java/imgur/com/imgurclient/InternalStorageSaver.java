@@ -26,12 +26,7 @@ import static android.content.Context.MODE_PRIVATE;
  * Created by Emilija.Pereska on 7/11/2016.
  */
 public class InternalStorageSaver implements ImageSaver {
-    private String proba="Ova e proba";
 
-    public String getProba()
-    {
-        return proba;
-    }
 
     @Override
     public void saveImages(ArrayList<ImageModel> images, final MainActivity context) throws IOException {

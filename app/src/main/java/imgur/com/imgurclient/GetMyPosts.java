@@ -22,19 +22,20 @@ public class GetMyPosts implements ImageLoader {
     private ImgurAPI api;
     private List<ImageModel> images = new ArrayList<>();
 
-    public void GetMyPosts() {
+    public  GetMyPosts() {
         this.api = ServiceGenerator.createService(ImgurAPI.class);
     }
 
     @Override
     public void load(final Callback2 callback2,int page) {
 
-        api.getMyPosts("EmkaMK").enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
+        api.getMyPosts().enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {
                     Log.e(GetMyPosts.class.getName(), "Request is successfull");
-                    images = getImageAttributes(response);
+                    images.addAll(getImageAttributes(response));
+
                     try {
                         callback2.onSuccess(images);
                     } catch (IOException e) {
@@ -56,7 +57,7 @@ public class GetMyPosts implements ImageLoader {
 
     @Override
     public boolean loadRefreshed(Callback2 call) {
-        return true;
+        return false;
     }
 
     protected List<ImageModel> getImageAttributes(Response<ImgurResponse<List<ImageResponse>>> response) {
@@ -65,8 +66,9 @@ public class GetMyPosts implements ImageLoader {
 
         for (ImageResponse imageResponse : imgurResponse.data) {
 
-            if (imageResponse.getType() != null && imageResponse.isAnimated()) {
+            if (imageResponse.getType() != null) {
                 ImageModel model = this.getImageAttributes(imageResponse);
+                Log.e(GetMyPosts.class.getName(),model.getLink());
                 imageInfo.add(0, model);
 
             }

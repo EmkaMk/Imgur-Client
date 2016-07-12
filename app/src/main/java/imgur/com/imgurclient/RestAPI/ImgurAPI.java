@@ -36,10 +36,8 @@ public interface ImgurAPI {
 
     );
 
-
-    @GET("/3/gallery/{user}/time/0.json")
+    @GET("/3/account/me/images")
     Call<ImgurResponse<List<ImageResponse>>> getMyPosts(
-            @Path("user") String username
     );
 
 

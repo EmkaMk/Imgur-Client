@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     TextView userName;
     int id;
     private RecyclerView rView;
-    ImageLoader loaderTopPosts;
+    ImageLoader postsLoader;
     private RecyclerView.LayoutManager manager;
     private ImageSaver saveImage;
 
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         setupRecyclerView();
         getTopPosts(0);
         getUserInformation();
-        populateList();
+        populateNavDrawer();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
@@ -105,10 +106,11 @@ public class MainActivity extends AppCompatActivity {
                 title.setText(imageResponse.getTitle());
                 Picasso.with(getApplicationContext()).load(imageResponse.getLink()).into(image);
                 if (imageResponse.getDescription() != null) {
+                    setDescription.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
                     setDescription.setText("Description: ");
                 }
                 description.setText(imageResponse.getDescription());
-                views.setText(imageResponse.getViews() + " views");
+                views.setText("Views: " +imageResponse.getViews());
 
             }
         });
@@ -143,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getTopPosts(int page) {
-        loaderTopPosts.load(new ImageLoader.Callback2() {
+        postsLoader.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
                 imageAdapter.addImages(images);
@@ -158,8 +160,27 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void getMyPosts(ImageLoader loader)
+    {
+        loader.load(new ImageLoader.Callback2() {
+            @Override
+            public void onSuccess(List<ImageModel> images) throws IOException {
+                imageAdapter.clearList();
+                imageAdapter.addImages(images);
+                saveImages((ArrayList<ImageModel>) images);
+            }
+
+            @Override
+            public void onFailure() {
+
+                Log.e(MainActivity.class.getName(), "Get My Posts failure");
+
+            }
+        }, 0);
+    }
+
     public boolean tryRefresh() {
-        return loaderTopPosts.loadRefreshed(new ImageLoader.Callback2() {
+        return postsLoader.loadRefreshed(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) {
                 imageAdapter.addImages(images);
@@ -216,12 +237,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void populateList() {
+    private void populateNavDrawer() {
         userName = (TextView) findViewById(R.id.userName);
         userName.setText("EmkaMK");
-        items.add(new NavigationItem("Upload new photo", R.mipmap.ic_launcher));
-        items.add(new NavigationItem("My posts", R.mipmap.ic_launcher));
-        items.add(new NavigationItem("Log out", R.mipmap.ic_launcher));
+        items.add(new NavigationItem("Upload new photo", R.mipmap.upload));
+        items.add(new NavigationItem("My posts", R.mipmap.myposts1));
+        items.add(new NavigationItem("Log out", R.mipmap.logout));
     }
 
     private void initializeVariables() {
@@ -231,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
         drawList = (ListView) findViewById(R.id.navList);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         adapter = new NavigationAdapter(this, items);
-        loaderTopPosts = obtainTopPostsLoader();
+        postsLoader = obtainTopPostsLoader();
         saveImage = new InternalStorageSaver();
 
     }
@@ -249,7 +270,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
             case 1:
-                // inflatePosts();
+                //rView = (RecyclerView) findViewById(R.id.recycler_view);
+               // postsLoader =new GetMyPosts();
+                getMyPosts(new GetMyPosts());
                 break;
             case 2:
                 auth.logOut();

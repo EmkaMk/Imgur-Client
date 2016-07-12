@@ -12,7 +12,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Created by emilija.pereska on six/20/2016.
+ * Created by emilija.pereska on 6/20/2016.
  */
 public class ServiceGenerator {
 
@@ -60,6 +60,11 @@ public class ServiceGenerator {
 //                return false;
 //            }
 //            return !accessToken.isEmpty();
+           /* if(accessToken!=null)
+            {
+                return  !accessToken.isEmpty();
+            }
+            return false;*/
             return accessToken != null && !accessToken.isEmpty();
         }
 

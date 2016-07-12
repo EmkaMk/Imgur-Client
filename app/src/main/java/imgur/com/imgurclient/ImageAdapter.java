@@ -42,6 +42,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         notifyItemRangeInserted(previousSize, currentSize);
     }
 
+    public void clearList()
+    {
+        int end=response.size();
+        response.clear();
+        notifyItemRangeRemoved(0,end);
+    }
+
     @Override
     public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
