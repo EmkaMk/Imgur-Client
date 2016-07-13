@@ -65,7 +65,11 @@ public class ServiceGenerator {
                 return  !accessToken.isEmpty();
             }
             return false;*/
-            return accessToken != null && !accessToken.isEmpty();
+
+           // return accessToken != null && !accessToken.isEmpty();
+
+
+            return     accessToken!=null ? (!accessToken.isEmpty() ? true : false ): false ;
         }
 
         private void refreshAccessTokenAndBlock() {

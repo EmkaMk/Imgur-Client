@@ -24,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -73,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
+        if (getIntent().hasExtra("MyPosts")) {
+            this.getMyPosts(new GetMyPosts());
+        }
+
     }
 
 
@@ -102,15 +107,19 @@ public class MainActivity extends AppCompatActivity {
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
+                final int size = (int) Math.ceil(Math.sqrt(512* 512));
+
 
                 title.setText(imageResponse.getTitle());
                 Picasso.with(getApplicationContext()).load(imageResponse.getLink()).into(image);
+                Picasso.with(getApplicationContext()).load(imageResponse.getLink()).transform(new BitMapTransform(512,512)).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).resize(size,size).into(image);
+
                 if (imageResponse.getDescription() != null) {
                     setDescription.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
                     setDescription.setText("Description: ");
                 }
                 description.setText(imageResponse.getDescription());
-                views.setText("Views: " +imageResponse.getViews());
+                views.setText("Views: " + imageResponse.getViews());
 
             }
         });
@@ -160,13 +169,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void getMyPosts(ImageLoader loader)
-    {
+    public void getMyPosts(ImageLoader loader) {
         loader.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
                 imageAdapter.clearList();
-                imageAdapter.addImages(images);
+                imageAdapter.addMyImages(images);
                 saveImages((ArrayList<ImageModel>) images);
             }
 
@@ -228,6 +236,10 @@ public class MainActivity extends AppCompatActivity {
         rView.setLayoutManager(manager);
         imageAdapter = new ImageAdapter(this);
         rView.setAdapter(imageAdapter);
+        if(!imageAdapter.response.isEmpty())
+        {
+            imageAdapter.response.clear();
+        }
 
         rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
             @Override
@@ -271,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 1:
                 //rView = (RecyclerView) findViewById(R.id.recycler_view);
-               // postsLoader =new GetMyPosts();
+                // postsLoader =new GetMyPosts();
                 getMyPosts(new GetMyPosts());
                 break;
             case 2:
@@ -283,5 +295,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        imageAdapter.clearList();
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        imageAdapter.clearList();
+    }
 }

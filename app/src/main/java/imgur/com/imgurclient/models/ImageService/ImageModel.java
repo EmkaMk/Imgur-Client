@@ -13,6 +13,8 @@ public class ImageModel {
     private String vote;
     private String type;
     private String link;
+    private int width;
+    private int height;
 
     public String getId() {
         return id;
@@ -78,5 +80,17 @@ public class ImageModel {
 
         return link;
     }
+    public void setWidth(int x)
+    {
+        this.width=x;
+    }
+
+    public void setHeight(int x)
+    {
+        this.height=x;
+    }
+    public int getWidth(){return width;}
+
+    public int getHeight(){return height;}
 
 }

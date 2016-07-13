@@ -59,4 +59,8 @@ public class ImageResponse {
         return views;
     }
 
+    public int getWidth(){return width;}
+
+    public int getHeight(){return height;}
+
 }

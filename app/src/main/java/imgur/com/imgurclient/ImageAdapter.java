@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -25,6 +27,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     MainActivity context;
     List<ImageModel> response;
+    private static final int MAX_WIDTH = 250;
+    private static final int MAX_HEIGHT = 250;
+    int size = (int) Math.ceil(Math.sqrt(MAX_WIDTH * MAX_HEIGHT));
 
 
     public ImageAdapter(MainActivity c) {
@@ -42,6 +47,20 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         notifyItemRangeInserted(previousSize, currentSize);
     }
 
+    public void addMyImages(List<ImageModel> images)
+    {
+        if (images == null || images.isEmpty()) {
+            return;
+        }
+      /*  if(response.size()==5)
+        {
+            response.clear();
+        }*/
+        response.addAll(images);
+        notifyItemRangeInserted(0,images.size());
+    }
+
+
     public void clearList()
     {
         int end=response.size();
@@ -58,7 +77,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public void onBindViewHolder(final PostViewHolder holder, final int position) {
-        Picasso.with(context).load(response.get(position).getLink()).into(holder.image);
+        Picasso.with(context).load(response.get(position).getLink()).transform(new BitMapTransform(MAX_WIDTH,MAX_WIDTH)).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).resize(size,size).centerInside().into(holder.image);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,6 +106,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
             this.image = (ImageView) itemView.findViewById(R.id.image);
         }
     }
+
 
 
 }

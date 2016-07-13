@@ -68,7 +68,6 @@ public class GetMyPosts implements ImageLoader {
 
             if (imageResponse.getType() != null) {
                 ImageModel model = this.getImageAttributes(imageResponse);
-                Log.e(GetMyPosts.class.getName(),model.getLink());
                 imageInfo.add(0, model);
 
             }
@@ -89,6 +88,9 @@ public class GetMyPosts implements ImageLoader {
         model.setViews(response.getViews());
         model.setAnimated(response.isAnimated());
         model.setLink(response.getLink());
+        model.setHeight(response.getHeight());
+        model.setWidth(response.getWidth());
+
 
         return model;
     }

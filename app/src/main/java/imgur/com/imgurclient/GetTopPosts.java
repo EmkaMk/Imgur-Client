@@ -120,6 +120,8 @@ public class GetTopPosts implements ImageLoader {
         model.setViews(response.getViews());
         model.setAnimated(response.isAnimated());
         model.setLink(response.getLink());
+        model.setHeight(response.getHeight());
+        model.setWidth(response.getWidth());
 
         return model;
     }

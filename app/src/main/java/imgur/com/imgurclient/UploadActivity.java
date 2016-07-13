@@ -80,6 +80,7 @@ public class UploadActivity extends AppCompatActivity {
                     Toast.makeText(UploadActivity.this, "Successful upload", Toast.LENGTH_LONG).show();
                     setContentView(R.layout.image_chooser);
                     startActivity(new Intent(UploadActivity.this, MainActivity.class).putExtra("MyPosts", "MyPosts"));
+                    Log.e(UploadActivity.class.getName(),"I sent this intent");
 
                 }
             }
