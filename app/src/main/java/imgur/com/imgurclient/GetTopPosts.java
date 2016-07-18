@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
-import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;

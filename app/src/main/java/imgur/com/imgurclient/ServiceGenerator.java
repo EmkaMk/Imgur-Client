@@ -1,5 +1,7 @@
 package imgur.com.imgurclient;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.Random;
 
@@ -16,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ServiceGenerator {
 
-    public static final String API_BASE_URL = "https://api.imgur.com";
+    public static final String API_BASE_URL = "https://api.imgur.com/3/";
 
     private static Retrofit retrofit =
             new Retrofit.Builder()
@@ -36,15 +38,17 @@ public class ServiceGenerator {
         private final ImgurAuthentication auth;
 
         private AuthorizationInterceptor() {
-            auth = new ImgurAuthentication();
+            auth = ImgurAuthentication.getInstance();
         }
 
         @Override
         public Response intercept(Chain chain) throws IOException {
             if (!auth.isLoggedIn()) {
+                Log.e(ServiceGenerator.class.getName(),auth.getAccessToken());
                 return chain.proceed(chain.request());
             }
-            if (!isAccessTokenValid()) {
+            if (!auth.isAccessTokenValid()) {
+                Log.e(ServiceGenerator.class.getName(), "Valid token");
                 refreshAccessTokenAndBlock();
             }
             Request requestWithAuth = chain.request().newBuilder()
@@ -53,24 +57,6 @@ public class ServiceGenerator {
             return chain.proceed(requestWithAuth);
         }
 
-        private boolean isAccessTokenValid() {
-            final String accessToken = auth.getAccessToken();
-//            todo
-//            if (accessToken == null) {
-//                return false;
-//            }
-//            return !accessToken.isEmpty();
-           /* if(accessToken!=null)
-            {
-                return  !accessToken.isEmpty();
-            }
-            return false;*/
-
-           // return accessToken != null && !accessToken.isEmpty();
-
-
-            return     accessToken!=null ? (!accessToken.isEmpty() ? true : false ): false ;
-        }
 
         private void refreshAccessTokenAndBlock() {
         }

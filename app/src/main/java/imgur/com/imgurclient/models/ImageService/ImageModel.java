@@ -89,8 +89,6 @@ public class ImageModel {
     {
         this.height=x;
     }
-    public int getWidth(){return width;}
 
-    public int getHeight(){return height;}
 
 }

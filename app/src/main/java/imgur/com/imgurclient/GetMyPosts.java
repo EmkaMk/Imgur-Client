@@ -33,7 +33,7 @@ public class GetMyPosts implements ImageLoader {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {
                 if (response.isSuccessful()) {
-                    Log.e(GetMyPosts.class.getName(), "Request is successfull");
+                    Log.e(GetMyPosts.class.getName(), "My Posts Request is successfull");
                     images.addAll(getImageAttributes(response));
 
                     try {

@@ -20,9 +20,10 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     RecyclerView.LayoutManager mLayoutManager;
 
 
-    public EndlessRecyclerViewScrollListener(GridLayoutManager layoutManager) {
+    public EndlessRecyclerViewScrollListener(GridLayoutManager layoutManager,ImageLoader loader) {
         this.mLayoutManager = layoutManager;
         visibleThreshold = visibleThreshold * layoutManager.getSpanCount();
+
     }
 
 
@@ -61,7 +62,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
         // threshold should reflect how many total columns there are too
         if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount) {
             currentPage++;
-            Log.e(EndlessRecyclerViewScrollListener.class.getName(),"Current page is "+ String.valueOf(currentPage));
             onLoadMore(currentPage, totalItemCount);
             loading = true;
         }

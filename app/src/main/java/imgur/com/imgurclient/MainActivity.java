@@ -33,6 +33,7 @@ import java.util.List;
 
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.login.ImgurAuthentication;
+import imgur.com.imgurclient.models.ImageService.AuthorizationResponse;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
 import imgur.com.imgurclient.models.ImageService.UserResponse;
@@ -66,24 +67,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initializeVariables();
-        auth = new ImgurAuthentication();
+        auth = ImgurAuthentication.getInstance();
+        auth.setModel(AuthorizationResponse.getInstance());
         setupRecyclerView();
-        getTopPosts(0);
         getUserInformation();
+        getTopPosts(0);
         populateNavDrawer();
         this.setNavigationDrawer(adapter);
         swipeRefresh();
 
-        if (getIntent().hasExtra("MyPosts")) {
-            this.getMyPosts(new GetMyPosts());
-        }
-
     }
 
-
-    private ImageLoader obtainTopPostsLoader() {
-        return new GetTopPosts();
-    }
 
     public void swipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -107,12 +101,16 @@ public class MainActivity extends AppCompatActivity {
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
-                final int size = (int) Math.ceil(Math.sqrt(512* 512));
+                final int size = 512;
 
 
                 title.setText(imageResponse.getTitle());
-                Picasso.with(getApplicationContext()).load(imageResponse.getLink()).into(image);
-                Picasso.with(getApplicationContext()).load(imageResponse.getLink()).transform(new BitMapTransform(512,512)).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).resize(size,size).into(image);
+                Picasso.with(getApplicationContext())
+                        .load(imageResponse.getLink())
+                        .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                        .resize(size, size)
+                        .onlyScaleDown()
+                        .into(image);
 
                 if (imageResponse.getDescription() != null) {
                     setDescription.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -173,9 +171,7 @@ public class MainActivity extends AppCompatActivity {
         loader.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
-                imageAdapter.clearList();
                 imageAdapter.addMyImages(images);
-                saveImages((ArrayList<ImageModel>) images);
             }
 
             @Override
@@ -192,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(List<ImageModel> images) {
                 imageAdapter.addImages(images);
+                Log.e(MainActivity.class.getName(), "Refresh is called!");
             }
 
             @Override
@@ -209,9 +206,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ImgurResponse<UserResponse>> call, Response<ImgurResponse<UserResponse>> response) {
                 if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Logged in!", Toast.LENGTH_LONG).show();
                     id = response.body().data.getId();
                 } else {
-                    Log.e(MainActivity.class.getName(), "Response not successful");
+
+                    Log.e(MainActivity.class.getName(), response.message());
+                    Toast.makeText(MainActivity.this, "Login is not successfull! Please try again!", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -236,15 +236,17 @@ public class MainActivity extends AppCompatActivity {
         rView.setLayoutManager(manager);
         imageAdapter = new ImageAdapter(this);
         rView.setAdapter(imageAdapter);
-        if(!imageAdapter.response.isEmpty())
-        {
+        if (!imageAdapter.response.isEmpty()) {
             imageAdapter.response.clear();
         }
 
-        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
+        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager, postsLoader) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
-                getTopPosts(page);
+                if (postsLoader instanceof GetTopPosts) {
+                    getTopPosts(page);
+                } else
+                    getMyPosts(postsLoader);
             }
         });
     }
@@ -264,13 +266,13 @@ public class MainActivity extends AppCompatActivity {
         drawList = (ListView) findViewById(R.id.navList);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         adapter = new NavigationAdapter(this, items);
-        postsLoader = obtainTopPostsLoader();
+        postsLoader = new GetTopPosts();
         saveImage = new InternalStorageSaver();
 
     }
 
     private void saveImages(ArrayList<ImageModel> images) throws IOException {
-        // saveImage.saveImages(images,this);
+        //  saveImage.saveImages(images,this);
     }
 
 
@@ -282,8 +284,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
             case 1:
-                //rView = (RecyclerView) findViewById(R.id.recycler_view);
-                // postsLoader =new GetMyPosts();
+
                 getMyPosts(new GetMyPosts());
                 break;
             case 2:

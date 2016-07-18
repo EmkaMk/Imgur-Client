@@ -22,7 +22,7 @@ public class GetUserInfo implements UserLoader {
 
     public GetUserInfo(ImgurAPI api) {
         this.api = api;
-        authentication = new ImgurAuthentication();
+        authentication = ImgurAuthentication.getInstance();
     }
 
     @Override

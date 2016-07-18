@@ -2,20 +2,20 @@ package imgur.com.imgurclient;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
+
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import imgur.com.imgurclient.models.ImageService.Image;
+
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 
 
@@ -47,25 +47,21 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         notifyItemRangeInserted(previousSize, currentSize);
     }
 
-    public void addMyImages(List<ImageModel> images)
-    {
+    public void addMyImages(List<ImageModel> images) {
         if (images == null || images.isEmpty()) {
             return;
         }
-      /*  if(response.size()==5)
-        {
-            response.clear();
-        }*/
+        clearList();
         response.addAll(images);
-        notifyItemRangeInserted(0,images.size());
+        notifyItemRangeInserted(0, images.size());
     }
 
 
-    public void clearList()
-    {
-        int end=response.size();
+    public void clearList() {
+        int end = response.size();
         response.clear();
-        notifyItemRangeRemoved(0,end);
+        response=new ArrayList<>();
+        notifyItemRangeRemoved(0, end);
     }
 
     @Override
@@ -77,7 +73,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     @Override
     public void onBindViewHolder(final PostViewHolder holder, final int position) {
-        Picasso.with(context).load(response.get(position).getLink()).transform(new BitMapTransform(MAX_WIDTH,MAX_WIDTH)).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).resize(size,size).centerInside().into(holder.image);
+        Picasso.with(context)
+                .load(response.get(position).getLink())
+                .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                .resize(size, size)
+                .centerCrop()
+                .into(holder.image);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,7 +107,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
             this.image = (ImageView) itemView.findViewById(R.id.image);
         }
     }
-
 
 
 }

@@ -40,7 +40,7 @@ public class UploadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.image_chooser);
-        authentication = new ImgurAuthentication();
+        authentication = ImgurAuthentication.getInstance();
         imageView = (ImageView) findViewById(R.id.view);
         upload = (Button) findViewById(R.id.upload);
         select = (Button) findViewById(R.id.select);
@@ -66,9 +66,9 @@ public class UploadActivity extends AppCompatActivity {
     private void uploadSelectedImage() {
 
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
-        Log.e(UploadActivity.class.getName(), "Service created");
+
         Call<ImgurResponse<Image>> call = api.uploadImage(encodedImage());
-        Log.e(UploadActivity.class.getName(), "Call created");
+
         progressDialog = ProgressDialog.show(this, "Uploading image", "Please wait while the image is being uploaded", true);
         call.enqueue(new retrofit2.Callback<ImgurResponse<Image>>() {
             @Override
@@ -79,8 +79,7 @@ public class UploadActivity extends AppCompatActivity {
 
                     Toast.makeText(UploadActivity.this, "Successful upload", Toast.LENGTH_LONG).show();
                     setContentView(R.layout.image_chooser);
-                    startActivity(new Intent(UploadActivity.this, MainActivity.class).putExtra("MyPosts", "MyPosts"));
-                    Log.e(UploadActivity.class.getName(),"I sent this intent");
+                    startActivity(new Intent(UploadActivity.this, MainActivity.class));
 
                 }
             }
@@ -119,8 +118,12 @@ public class UploadActivity extends AppCompatActivity {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = true;
+        options.inSampleSize = 4;
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        bitmap.recycle();
         byte[] byteArrayImage = byteArrayOutputStream.toByteArray();
         return Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
     }

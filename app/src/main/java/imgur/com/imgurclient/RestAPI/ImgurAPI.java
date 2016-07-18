@@ -20,23 +20,23 @@ import retrofit2.http.Path;
 public interface ImgurAPI {
 
     @FormUrlEncoded
-    @POST("/3/image")
+    @POST("image")
     Call<ImgurResponse<Image>> uploadImage(
             @Field("image") String image);
 
 
-    @GET("/3/gallery/hot/viral/{page}.json")
+    @GET("gallery/hot/viral/{page}.json")
     Call<ImgurResponse<List<ImageResponse>>> getTopPosts(
             @Path("page") int page
     );
 
-    @GET("/3/account/{username}")
+    @GET("account/{username}")
     Call<ImgurResponse<UserResponse>> getUserInfo(
             @Path("username") String username
 
     );
 
-    @GET("/3/account/me/images")
+    @GET("account/me/images")
     Call<ImgurResponse<List<ImageResponse>>> getMyPosts(
     );
 
