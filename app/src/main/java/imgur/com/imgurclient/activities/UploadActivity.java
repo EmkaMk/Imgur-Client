@@ -1,4 +1,4 @@
-package imgur.com.imgurclient;
+package imgur.com.imgurclient.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -19,7 +19,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import imgur.com.imgurclient.R;
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
+import imgur.com.imgurclient.ServiceGenerator;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.Image;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;

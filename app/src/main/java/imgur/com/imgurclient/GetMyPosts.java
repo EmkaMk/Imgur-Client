@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
+import imgur.com.imgurclient.activities.MainActivity;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 import imgur.com.imgurclient.models.ImageService.ImageResponse;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
@@ -27,8 +28,7 @@ public class GetMyPosts implements ImageLoader {
     }
 
     @Override
-    public void load(final Callback2 callback2,int page) {
-
+    public void load(final Callback2 callback2, int page) {
         api.getMyPosts().enqueue(new Callback<ImgurResponse<List<ImageResponse>>>() {
             @Override
             public void onResponse(Call<ImgurResponse<List<ImageResponse>>> call, Response<ImgurResponse<List<ImageResponse>>> response) {

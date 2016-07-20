@@ -1,7 +1,6 @@
 package imgur.com.imgurclient;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
@@ -18,13 +17,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import imgur.com.imgurclient.activities.MainActivity;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Emilija.Pereska on 7/11/2016.
  */
+
+// not used, implementation used for saving images localy
 public class InternalStorageSaver implements ImageSaver {
 
 

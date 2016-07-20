@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import imgur.com.imgurclient.activities.MainActivity;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 
 
@@ -47,11 +48,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
     {
         return INSTANCE;
     }
-
-   /* public ImageAdapter(MainActivity c) {
-        this.context = c;
-        response = new ArrayList<>();
-    }*/
 
     public void setContext(Context c) {
         this.context = (MainActivity) c;

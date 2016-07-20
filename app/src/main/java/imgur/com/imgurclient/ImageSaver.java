@@ -1,9 +1,9 @@
 package imgur.com.imgurclient;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import imgur.com.imgurclient.activities.MainActivity;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 
 /**

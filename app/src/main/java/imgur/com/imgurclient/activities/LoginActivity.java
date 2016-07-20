@@ -1,34 +1,35 @@
-package imgur.com.imgurclient;
+package imgur.com.imgurclient.activities;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.LoginFilter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import imgur.com.imgurclient.Constants;
+import imgur.com.imgurclient.R;
 import imgur.com.imgurclient.login.ImgurAuthentication;
 import imgur.com.imgurclient.models.ImageService.AuthorizationResponse;
 
 
-public class HomeActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     private static final String URL = "https://api.imgur.com/oauth2/authorize?client_id=" + Constants.CLIENT_ID + "&response_type=token";
     private Button login;
     private ImgurAuthentication auth = ImgurAuthentication.getInstance();
     private AuthorizationResponse model = AuthorizationResponse.getInstance();
+    private boolean isLoggedIn=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_login);
         auth.setModel(model);
         handleLogin();
     }
@@ -37,15 +38,18 @@ public class HomeActivity extends AppCompatActivity {
         if (getIntent().getAction().equals(Intent.ACTION_VIEW)) // uspesno logiranje
         {
 
+            setContentView(R.layout.activity_main);
+
             Uri data = getIntent().getData();
             if (data != null && data.toString().contains(Constants.REDIRECT_URL)) {
                 this.getURIValues(data);
                 Intent i = new Intent(this, MainActivity.class);
                 startActivity(i);
+                isLoggedIn=true;
                 finish();
 
             } else {
-                Toast.makeText(HomeActivity.this, "Login is not successful", Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, "Login is not successful", Toast.LENGTH_LONG).show();
             }
         } else { // prvoLogiranje
             login = (Button) findViewById(R.id.login);
@@ -87,4 +91,9 @@ public class HomeActivity extends AppCompatActivity {
         return m.group(1);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(LoginActivity.class.getName(),"I AM RESUMED BITCH");
+    }
 }

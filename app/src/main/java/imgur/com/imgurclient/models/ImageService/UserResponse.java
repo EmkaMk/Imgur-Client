@@ -12,10 +12,10 @@ public class UserResponse {
     private int created;
     private boolean pro_expiration;
 
-    public String getUrl()
+   /* public String getUrl()
     {
         return url;
-    }
+    }*/
 
     public int getCreated()
     {
