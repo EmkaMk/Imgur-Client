@@ -31,6 +31,7 @@ import imgur.com.imgurclient.GetTopPosts;
 import imgur.com.imgurclient.ImageAdapter;
 import imgur.com.imgurclient.ImageLoader;
 import imgur.com.imgurclient.R;
+import imgur.com.imgurclient.RecyclerView.RecyclerViewComponent;
 import imgur.com.imgurclient.RestAPI.ImgurAPI;
 import imgur.com.imgurclient.ServiceGenerator;
 import imgur.com.imgurclient.login.ImgurAuthentication;
@@ -53,16 +54,19 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
     private ImageAdapter imageAdapter;
     private RecyclerView rView;
     private ImageLoader postsLoader;
-    private RecyclerView.LayoutManager manager;
+    //private RecyclerView.LayoutManager manager;
+    RecyclerView.LayoutManager manager;
     private TextView userName;
     private NavDrawerView navDrawerView;
+   // private RecyclerViewComponent rView;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        navDrawerView= (NavDrawerView) findViewById(R.id.navList);
+        navDrawerView = (NavDrawerView) findViewById(R.id.navList);
+        rView= (RecyclerView) findViewById(R.id.recycler_view);
         setupNavDrawer();
         imageAdapter = ImageAdapter.getInstance();
         postsLoader = new GetTopPosts();
@@ -143,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
                 imageAdapter.addImages(images);
-                //saveImages((ArrayList<ImageModel>) images);
+
             }
 
             @Override
@@ -154,8 +158,9 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
 
     }
 
-    public void getMyPosts(ImageLoader loader) {
-        loader.load(new ImageLoader.Callback2() {
+    public void getMyPosts() {
+        postsLoader = new GetMyPosts();
+        postsLoader.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
                 imageAdapter.addMyImages(images);
@@ -186,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
         });
     }
 
+    // cant figure out if I really need this, need to test with other accounts
     public void getUserInformation() {
         ImgurAPI api = ServiceGenerator.createService(ImgurAPI.class);
         Call<ImgurResponse<UserResponse>> call = api.getUserInfo(AuthorizationResponse.getInstance().getAccount_username());
@@ -213,35 +219,33 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
     }
 
     private void setupRecyclerView() {
-        rView = (RecyclerView) findViewById(R.id.recycler_view);
+
         manager = new GridLayoutManager(MainActivity.this,
                 getResources().getInteger(R.integer.posts_grid_cols_count));
 
         rView.setLayoutManager(manager);
         imageAdapter.setContext(this);
         rView.setAdapter(imageAdapter);
-        if (!imageAdapter.getResponse().isEmpty()) {
-            imageAdapter.getResponse().clear();
-        }
 
-        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager, postsLoader) {
+        rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 if (postsLoader instanceof GetTopPosts) {
                     getTopPosts(page);
                 } else
-                    getMyPosts(postsLoader);
+                    getMyPosts();
             }
         });
     }
 
+    //close the drawer!!!!!
     private void setupNavDrawer() {
         userName = (TextView) findViewById(R.id.userName);
         userName.setText(AuthorizationResponse.getInstance().getAccount_username());
 
         navDrawerView.setMenuSelection(this);
         //findViewById(R.id.drawerLayout);
-       navDrawerView.setDrawerLayout((DrawerLayout) findViewById(R.id.drawerLayout));
+        navDrawerView.setDrawerLayout((DrawerLayout) findViewById(R.id.drawerLayout));
 
     }
 
@@ -254,8 +258,7 @@ public class MainActivity extends AppCompatActivity implements NavDrawerView.Men
     @Override
     public void onMyPostsSelected() {
 
-        getMyPosts(new GetMyPosts());
-
+        getMyPosts();
 
     }
 

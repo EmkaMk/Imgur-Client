@@ -4,12 +4,18 @@ import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import imgur.com.imgurclient.EndlessRecyclerViewScrollListener;
 import imgur.com.imgurclient.ImageAdapter;
 
 /**
  * Created by emilija.pereska on 7/20/2016.
  */
+
+//implement the endless scroll listener
 public class RecyclerViewComponent extends RecyclerView {
+
+    LayoutManager manager;
+
 
     public RecyclerViewComponent(Context context) {
         super(context);
@@ -36,6 +42,19 @@ public class RecyclerViewComponent extends RecyclerView {
         if (!(layout instanceof GridLayoutManager)) {
             throw new IllegalArgumentException("GridLayoutManager is expected");
         }
+        manager=layout;
         super.setLayoutManager(layout);
+    }
+
+   public void setEndlessScroll()
+    {
+        this.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+
+
+        //implement logic for invoking getTopPosts or getMyPosts
+            }
+        });
     }
 }

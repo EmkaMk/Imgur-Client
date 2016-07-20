@@ -12,6 +12,7 @@ public class NavDrawerView extends ListView {
 
     private DrawerLayout drawerLayout;
 
+
     public NavDrawerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setAdapter(new NavigationAdapter(context));

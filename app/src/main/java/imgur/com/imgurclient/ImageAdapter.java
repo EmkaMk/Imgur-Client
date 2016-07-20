@@ -36,6 +36,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
     private ImageAdapter() {
 
+        if (!getResponse().isEmpty()) {
+            getResponse().clear();
+        }
     }
 
     public List<ImageModel> getResponse()
@@ -44,8 +47,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
         return response;
     }
 
-    public static ImageAdapter getInstance()
-    {
+    public static ImageAdapter getInstance() {
         return INSTANCE;
     }
 
