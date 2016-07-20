@@ -26,15 +26,35 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
 
 
     MainActivity context;
-    List<ImageModel> response;
+    private List<ImageModel> response = new ArrayList<>();
     private static final int MAX_WIDTH = 250;
     private static final int MAX_HEIGHT = 250;
     int size = (int) Math.ceil(Math.sqrt(MAX_WIDTH * MAX_HEIGHT));
 
+    private static final ImageAdapter INSTANCE = new ImageAdapter();
 
-    public ImageAdapter(MainActivity c) {
+    private ImageAdapter() {
+
+    }
+
+    public List<ImageModel> getResponse()
+
+    {
+        return response;
+    }
+
+    public static ImageAdapter getInstance()
+    {
+        return INSTANCE;
+    }
+
+   /* public ImageAdapter(MainActivity c) {
         this.context = c;
         response = new ArrayList<>();
+    }*/
+
+    public void setContext(Context c) {
+        this.context = (MainActivity) c;
     }
 
     public void addImages(List<ImageModel> images) {
@@ -60,7 +80,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.PostViewHold
     public void clearList() {
         int end = response.size();
         response.clear();
-        response=new ArrayList<>();
+        response = new ArrayList<>();
         notifyItemRangeRemoved(0, end);
     }
 

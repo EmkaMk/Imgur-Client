@@ -79,7 +79,7 @@
         </RelativeLayout>
 
         <!-- List of Actions (pages) -->
-        <ListView
+        <imgur.com.imgurclient.navigationDrawer.NavDrawerView
             android:id="@+id/navList"
             android:layout_width="280dp"
             android:layout_height="match_parent"

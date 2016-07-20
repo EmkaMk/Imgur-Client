@@ -45,4 +45,9 @@ public class AuthorizationResponse {
         return access_token;
     }
 
+    public String getAccount_username()
+    {
+        return this.account_username;
+    }
+
 }

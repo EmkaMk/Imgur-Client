@@ -19,8 +19,6 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,49 +35,45 @@ import imgur.com.imgurclient.models.ImageService.AuthorizationResponse;
 import imgur.com.imgurclient.models.ImageService.ImageModel;
 import imgur.com.imgurclient.models.ImageService.ImgurResponse;
 import imgur.com.imgurclient.models.ImageService.UserResponse;
-import imgur.com.imgurclient.navigationDrawer.NavigationAdapter;
-import imgur.com.imgurclient.navigationDrawer.NavigationItem;
+import imgur.com.imgurclient.navigationDrawer.NavDrawerView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static android.widget.Toast.LENGTH_SHORT;
+
 public class MainActivity extends AppCompatActivity {
-    ListView drawList;
-    ImgurAuthentication auth;
-    RelativeLayout draw_layout;
-    private DrawerLayout mDrawerLayout;
-    private ArrayList<NavigationItem> items = new ArrayList<>();
-    NavigationAdapter adapter;
+    private ImgurAuthentication auth;
     private ImageView image;
     private TextView title, description, views, setDescription;
     private SwipeRefreshLayout swipeRefreshLayout;
-    ImageAdapter imageAdapter;
-    TextView userName;
+    private ImageAdapter imageAdapter;
     int id;
     private RecyclerView rView;
-    ImageLoader postsLoader;
+    private ImageLoader postsLoader;
     private RecyclerView.LayoutManager manager;
-    private ImageSaver saveImage;
+    private TextView userName;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initializeVariables();
+        setupNavDrawer();
+        imageAdapter = ImageAdapter.getInstance();
+        postsLoader = new GetTopPosts();
         auth = ImgurAuthentication.getInstance();
         auth.setModel(AuthorizationResponse.getInstance());
         setupRecyclerView();
         getUserInformation();
         getTopPosts(0);
-        populateNavDrawer();
-        this.setNavigationDrawer(adapter);
         swipeRefresh();
 
     }
 
 
     public void swipeRefresh() {
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -129,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog = builder.create();
         LayoutInflater inflater = getLayoutInflater();
-        View dialogLayout = inflater.inflate(R.layout.activity_show_image, null);
+        View dialogLayout = inflater.inflate(R.layout.alert_dialog, null);
         image = (ImageView) dialogLayout.findViewById(R.id.imageView);
         title = (TextView) dialogLayout.findViewById(R.id.title);
         description = (TextView) dialogLayout.findViewById(R.id.description);
@@ -140,23 +134,13 @@ public class MainActivity extends AppCompatActivity {
         return dialog;
     }
 
-    public void setNavigationDrawer(NavigationAdapter adapter) {
-        drawList.setAdapter(adapter);
-        drawList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectItemFromDrawer(position);
-                mDrawerLayout.closeDrawers();
-            }
-        });
-    }
 
     public void getTopPosts(int page) {
         postsLoader.load(new ImageLoader.Callback2() {
             @Override
             public void onSuccess(List<ImageModel> images) throws IOException {
                 imageAdapter.addImages(images);
-                saveImages((ArrayList<ImageModel>) images);
+                //saveImages((ArrayList<ImageModel>) images);
             }
 
             @Override
@@ -194,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure() {
                 Log.e(MainActivity.class.getName(), "No refreshed");
-                Toast.makeText(MainActivity.this, "Nothing to update", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Nothing to update", LENGTH_SHORT).show();
             }
         });
     }
@@ -211,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
 
                     Log.e(MainActivity.class.getName(), response.message());
-                    Toast.makeText(MainActivity.this, "Login is not successfull! Please try again!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Login is not successfull! Please try again!", LENGTH_SHORT).show();
                 }
             }
 
@@ -226,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
+
         rView = (RecyclerView) findViewById(R.id.recycler_view);
         if (getResources().getConfiguration().orientation == 1) {
             manager = new GridLayoutManager(MainActivity.this, 2);
@@ -234,10 +219,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         rView.setLayoutManager(manager);
-        imageAdapter = new ImageAdapter(this);
+        imageAdapter.setContext(this);
         rView.setAdapter(imageAdapter);
-        if (!imageAdapter.response.isEmpty()) {
-            imageAdapter.response.clear();
+        if (!imageAdapter.getResponse().isEmpty()) {
+            imageAdapter.getResponse().clear();
         }
 
         rView.addOnScrollListener(new EndlessRecyclerViewScrollListener((GridLayoutManager) manager, postsLoader) {
@@ -251,28 +236,30 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void populateNavDrawer() {
+
+    private void setupNavDrawer() {
+
         userName = (TextView) findViewById(R.id.userName);
-        userName.setText("EmkaMK");
-        items.add(new NavigationItem("Upload new photo", R.mipmap.upload));
-        items.add(new NavigationItem("My posts", R.mipmap.myposts1));
-        items.add(new NavigationItem("Log out", R.mipmap.logout));
-    }
+        userName.setText(AuthorizationResponse.getInstance().getAccount_username());
+        final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        final NavDrawerView navDrawerView = (NavDrawerView) findViewById(R.id.navList);
+        if (navDrawerView != null) {
+            navDrawerView.setMs(new NavDrawerView.MenuSelection() {
+                @Override
+                public void onSelectItem() {
+                    navDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-    private void initializeVariables() {
+                            selectItemFromDrawer(position);
+                            drawerLayout.closeDrawers();
+                        }
+                    });
+                }
+            });
+            navDrawerView.selectItem();
+        }
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        draw_layout = (RelativeLayout) findViewById(R.id.drawerPane);
-        drawList = (ListView) findViewById(R.id.navList);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
-        adapter = new NavigationAdapter(this, items);
-        postsLoader = new GetTopPosts();
-        saveImage = new InternalStorageSaver();
-
-    }
-
-    private void saveImages(ArrayList<ImageModel> images) throws IOException {
-        //  saveImage.saveImages(images,this);
     }
 
 
@@ -284,27 +271,19 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, UploadActivity.class));
                 break;
             case 1:
-
                 getMyPosts(new GetMyPosts());
                 break;
             case 2:
                 auth.logOut();
                 startActivity(new Intent(this, HomeActivity.class).setAction("CUSTOM_ACTION"));
-                Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Logged out", LENGTH_SHORT).show();
                 break;
         }
 
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        imageAdapter.clearList();
+    private void saveImages(ArrayList<ImageModel> images) throws IOException {
+        //  saveImage.saveImages(images,this);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        imageAdapter.clearList();
-    }
 }
